@@ -18,3 +18,8 @@ build/
 
 # Custom
 *.log
+
+# Sensitive/Large Files
+END401*.pdf
+Ibrahim-Turkyilmaz*.pdf
+frontend-icin-ornek-gorsel/
