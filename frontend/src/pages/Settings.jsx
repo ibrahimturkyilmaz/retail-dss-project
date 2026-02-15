@@ -566,6 +566,22 @@ const AboutSection = () => (
             </div>
         </div>
 
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8 text-left">
+            <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <span className="text-lg">✨</span> Temel Özellikler
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-600">
+                <div className="flex items-center gap-2"><CheckCircleIcon className="w-5 h-5 text-emerald-500" /> ARAS AI Sesli Asistan</div>
+                <div className="flex items-center gap-2"><CheckCircleIcon className="w-5 h-5 text-emerald-500" /> Hava Durumu Farkındalığı</div>
+                <div className="flex items-center gap-2"><CheckCircleIcon className="w-5 h-5 text-emerald-500" /> Robin Hood Transfer</div>
+                <div className="flex items-center gap-2"><CheckCircleIcon className="w-5 h-5 text-emerald-500" /> ABC/XYZ Analizi</div>
+                <div className="flex items-center gap-2"><CheckCircleIcon className="w-5 h-5 text-emerald-500" /> What-If Simülasyon</div>
+                <div className="flex items-center gap-2"><CheckCircleIcon className="w-5 h-5 text-emerald-500" /> Sesli Navigasyon</div>
+                <div className="flex items-center gap-2"><CheckCircleIcon className="w-5 h-5 text-emerald-500" /> Dark Mode</div>
+                <div className="flex items-center gap-2"><CheckCircleIcon className="w-5 h-5 text-emerald-500" /> PDF/Excel Export</div>
+            </div>
+        </div>
+
         <div className="text-left mb-10">
             <div className="flex items-center justify-between mb-4 px-1">
                 <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">Geliştirme Yol Haritası</div>
