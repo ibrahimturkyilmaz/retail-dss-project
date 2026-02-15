@@ -602,21 +602,17 @@ const AboutSection = () => (
                         <span className="transform group-open:rotate-180 transition-transform text-gray-400 text-xs">▼</span>
                     </summary>
                     <div className="px-4 py-3 text-xs text-gray-600 border-t border-gray-50 space-y-3 bg-gray-50/30">
-                        <div>
-                            <span className="font-bold text-indigo-600">Aşama 1: Bulut Geçişi:</span>
-                            <p className="mt-1">SQLite'dan Supabase(PostgreSQL)'e geçiş. Backend Render.com, Frontend Firebase Hosting yayını.</p>
+                        <div className="bg-emerald-50 p-2 rounded-lg border border-emerald-100">
+                            <span className="font-bold text-emerald-600">✅ Aşama 1: Bulut Geçişi (Tamamlandı):</span>
+                            <p className="mt-1">SQLite'dan Supabase(PostgreSQL)'e geçiş. Backend Render.com, Frontend Vercel ile canlıya alındı.</p>
                         </div>
-                        <div className="bg-red-50 p-2 rounded-lg border border-red-100">
-                            <span className="font-bold text-red-600">🚩 Acil: GitHub Entegrasyonu:</span>
-                            <p className="mt-1">Hassas verilerin temizlenmesi, .gitignore yapılandırması ve projenin GitHub'a yüklenmesi.</p>
-                        </div>
-                        <div>
-                            <span className="font-bold text-indigo-600">Aşama 2: Gelişmiş Hafıza:</span>
-                            <p className="mt-1">Sohbet geçmişinin bulut veritabanında (Supabase) kalıcı hale getirilmesi.</p>
+                        <div className="bg-indigo-50 p-2 rounded-lg border border-indigo-100">
+                            <span className="font-bold text-indigo-600">⏳ Aşama 2: Kullanıcı Verisi & Bulut Hafızası (Sıradaki):</span>
+                            <p className="mt-1">Kullanıcı profilleri, kişisel tercihler ve AI sohbet geçmişinin yerel tarayıcı yerine Supabase veritabanında kalıcı ve güvenli olarak saklanması.</p>
                         </div>
                         <div>
-                            <span className="font-bold text-indigo-600">Aşama 3: Forecasting 2.0:</span>
-                            <p className="mt-1">XGBoost modeline geçiş. Hava durumu ve mevsimsellik etkilerinin tahminlere dahil edilmesi.</p>
+                            <span className="font-bold text-gray-700">Aşama 3: Forecasting 2.0:</span>
+                            <p className="mt-1">XGBoost modeline geçiş. Hava durumu ve mevsimsellik etkilerinin tahminlere daha derinlemesine dahil edilmesi.</p>
                         </div>
                     </div>
                 </details>
@@ -888,9 +884,9 @@ const ModelSettings = () => {
                                     <div className="flex items-center gap-2">
                                         <span className="font-bold text-sm text-gray-900">{s.title}</span>
                                         <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${s.score >= 85 ? 'bg-emerald-100 text-emerald-700' :
-                                                s.score >= 50 ? 'bg-blue-100 text-blue-700' :
-                                                    s.score > 0 ? 'bg-orange-100 text-orange-700' :
-                                                        'bg-red-100 text-red-700'
+                                            s.score >= 50 ? 'bg-blue-100 text-blue-700' :
+                                                s.score > 0 ? 'bg-orange-100 text-orange-700' :
+                                                    'bg-red-100 text-red-700'
                                             }`}>%{s.score}</span>
                                     </div>
                                     <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{s.desc}</p>
