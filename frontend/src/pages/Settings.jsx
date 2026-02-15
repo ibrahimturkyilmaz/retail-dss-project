@@ -529,120 +529,111 @@ const FaqItem = ({ q, a }) => (
 const AboutSection = () => (
     <div className="max-w-2xl animate-fade-in mx-auto text-center">
         <div className="mb-8 relative inline-block">
-            <div className="absolute -inset-4 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full blur opacity-20 animate-pulse"></div>
-            <img src="/logo-icon.svg" className="w-20 h-20 relative z-10 mx-auto" alt="Logo" onError={(e) => { e.target.style.display = 'none' }} />
+            <div className="absolute -inset-4 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full blur opacity-25 animate-pulse"></div>
+            <img src="/logo-icon.svg" className="w-24 h-24 relative z-10 mx-auto transform transition-transform hover:scale-105 duration-300" alt="Logo" onError={(e) => { e.target.style.display = 'none' }} />
             {/* Logo yoksa fallback ikon */}
-            <div className="w-20 h-20 bg-indigo-600 rounded-2xl mx-auto flex items-center justify-center text-white shadow-xl relative z-0">
-                <BuildingOfficeIcon className="w-10 h-10" />
+            <div className="w-24 h-24 bg-gradient-to-br from-indigo-600 to-blue-700 rounded-2xl mx-auto flex items-center justify-center text-white shadow-xl relative z-0">
+                <BuildingOfficeIcon className="w-12 h-12" />
             </div>
         </div>
 
-        <h2 className="text-3xl font-extrabold text-gray-900 mb-1 tracking-tight">RetailDSS</h2>
-        <p className="text-sm text-gray-400 font-medium mb-1">powered by ARAS (Akıllı Retail Asistan Sistemi)</p>
-        <p className="text-lg text-indigo-600 font-medium mb-8">Akıllı Perakende Karar Destek Platformu</p>
+        <h2 className="text-4xl font-extrabold text-gray-900 mb-2 tracking-tight">RetailDSS <span className="text-indigo-600">Pro</span></h2>
+        <p className="text-sm text-gray-500 font-semibold uppercase tracking-widest mb-2">Bulut Tabanlı Karar Destek Sistemi</p>
+        <p className="text-lg text-gray-600 max-w-lg mx-auto mb-10 leading-relaxed">
+            Perakende operasyonlarını yapay zeka ve veri analitiği ile optimize eden yeni nesil yönetim platformu.
+        </p>
 
-        <div className="grid grid-cols-2 gap-4 mb-6 text-left cursor-default">
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:border-indigo-200 transition-colors">
-                <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Versiyon</div>
-                <div className="text-xl font-bold text-gray-900">v2.0.0</div>
-                <div className="text-xs text-emerald-600 font-medium mt-1">● ARAS AI Entegreli</div>
-            </div>
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:border-indigo-200 transition-colors">
-                <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Geliştirici</div>
-                <div className="text-lg font-bold text-gray-900 truncate">İbrahim Türkyılmaz</div>
-                <div className="text-xs text-gray-500 mt-1">Endüstri Mühendisliği</div>
-            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 text-left">
+            <StatsCard label="Versiyon" value="v2.1.0" sub="Cloud Stable" color="text-indigo-600" bg="bg-indigo-50" />
+            <StatsCard label="Geliştirici" value="İbrahim Türkyılmaz" sub="Endüstri Müh." color="text-emerald-600" bg="bg-emerald-50" />
+            <StatsCard label="Altyapı" value="Supabase" sub="PostgreSQL" color="text-blue-600" bg="bg-blue-50" />
         </div>
 
-        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 mb-6 text-left">
-            <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Teknoloji Yığını</div>
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8 text-left">
+            <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <CpuChipIcon className="w-4 h-4" />
+                Modern Teknoloji Yığını
+            </div>
             <div className="flex flex-wrap gap-2">
-                <TechBadge name="React 18" color="text-sky-600 bg-sky-50" />
-                <TechBadge name="FastAPI" color="text-emerald-600 bg-emerald-50" />
-                <TechBadge name="SQLite" color="text-blue-600 bg-blue-50" />
-                <TechBadge name="TailwindCSS" color="text-cyan-600 bg-cyan-50" />
-                <TechBadge name="XGBoost AI" color="text-purple-600 bg-purple-50" />
-                <TechBadge name="Google Gemini" color="text-amber-600 bg-amber-50" />
-                <TechBadge name="Web Speech API" color="text-rose-600 bg-rose-50" />
-                <TechBadge name="WeatherAPI" color="text-teal-600 bg-teal-50" />
+                <TechBadge name="React 18" color="text-sky-600 bg-sky-50 border-sky-100" />
+                <TechBadge name="FastAPI" color="text-emerald-600 bg-emerald-50 border-emerald-100" />
+                <TechBadge name="Supabase" color="text-green-600 bg-green-50 border-green-100" />
+                <TechBadge name="PostgreSQL" color="text-blue-600 bg-blue-50 border-blue-100" />
+                <TechBadge name="Render" color="text-gray-600 bg-gray-50 border-gray-200" />
+                <TechBadge name="Vercel" color="text-black bg-gray-100 border-gray-300" />
+                <TechBadge name="Gemini 2.0 Flash" color="text-amber-600 bg-amber-50 border-amber-100" />
+                <TechBadge name="Web Speech API" color="text-rose-600 bg-rose-50 border-rose-100" />
             </div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 mb-8 text-left">
-            <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Temel Özellikler</div>
-            <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
-                <div className="flex items-center gap-2"><span className="text-emerald-500">✓</span> ARAS AI Sesli Asistan</div>
-                <div className="flex items-center gap-2"><span className="text-emerald-500">✓</span> Hava Durumu Farkındalığı</div>
-                <div className="flex items-center gap-2"><span className="text-emerald-500">✓</span> Robin Hood Transfer</div>
-                <div className="flex items-center gap-2"><span className="text-emerald-500">✓</span> ABC/XYZ Analizi</div>
-                <div className="flex items-center gap-2"><span className="text-emerald-500">✓</span> What-If Simülasyon</div>
-                <div className="flex items-center gap-2"><span className="text-emerald-500">✓</span> Sesli Navigasyon</div>
-                <div className="flex items-center gap-2"><span className="text-emerald-500">✓</span> Dark Mode</div>
-                <div className="flex items-center gap-2"><span className="text-emerald-500">✓</span> PDF/Excel Export</div>
+        <div className="text-left mb-10">
+            <div className="flex items-center justify-between mb-4 px-1">
+                <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">Geliştirme Yol Haritası</div>
+                <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">Canlı Sistem</span>
+            </div>
+
+            <div className="space-y-3">
+                {/* Tamamlanan */}
+                <div className="group bg-white rounded-xl border border-emerald-100/50 overflow-hidden shadow-sm hover:shadow-md transition-all">
+                    <div className="px-5 py-4 flex flex-col gap-2">
+                        <div className="flex items-center gap-3">
+                            <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold">✓</div>
+                            <span className="font-bold text-gray-800 text-sm">Faz 1: Bulut Dönüşümü (Tamamlandı)</span>
+                        </div>
+                        <p className="text-xs text-gray-500 pl-9 leading-relaxed">
+                            Sistem, yerel SQLite veritabanından ölçeklenebilir <strong>Supabase (PostgreSQL)</strong> altyapısına taşındı. Backend <strong>Render</strong>, Frontend <strong>Vercel</strong> üzerinde yayınlandı.
+                        </p>
+                    </div>
+                </div>
+
+                {/* Aktif / Sıradaki */}
+                <div className="group bg-gradient-to-r from-indigo-50 to-white rounded-xl border border-indigo-200 overflow-hidden shadow-sm relative ring-1 ring-indigo-100">
+                    <div className="absolute top-0 right-0 bg-indigo-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">ŞU AN</div>
+                    <div className="px-5 py-4 flex flex-col gap-2">
+                        <div className="flex items-center gap-3">
+                            <div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold animate-pulse">2</div>
+                            <span className="font-bold text-indigo-700 text-sm">Faz 2: Kullanıcı Odaklı Veri & Kalıcılık</span>
+                        </div>
+                        <p className="text-xs text-gray-600 pl-9 leading-relaxed">
+                            Kullanıcı profilleri, kişisel ayarlar, favori raporlar ve <strong>ARAS AI sohbet geçmişi</strong> artık tarayıcı önbelleği yerine güvenli bulut veritabanında saklanacak.
+                            <br /><span className="inline-block mt-1 text-indigo-500 font-medium text-[10px]">• Hedef: Kesintisiz deneyim ve cihazlar arası senkronizasyon.</span>
+                        </p>
+                    </div>
+                </div>
+
+                {/* Gelecek */}
+                <div className="group bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-all opacity-80 hover:opacity-100">
+                    <div className="px-5 py-4 flex flex-col gap-2">
+                        <div className="flex items-center gap-3">
+                            <div className="w-6 h-6 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center text-xs font-bold">3</div>
+                            <span className="font-bold text-gray-700 text-sm">Faz 3: İleri Seviye Tahminleme (Forecasting 2.0)</span>
+                        </div>
+                        <p className="text-xs text-gray-500 pl-9 leading-relaxed">
+                            XGBoost ve LightGBM gibi gelişmiş makine öğrenmesi modellerinin entegrasyonu. Hava durumu verisinin tahmin başarısına etkisinin maksimize edilmesi.
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div className="text-left mb-8">
-            <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-1">Proje Yol Haritası (V2.0)</div>
-            <div className="space-y-2">
-                <details className="group bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm">
-                    <summary className="px-4 py-3 cursor-pointer font-bold text-gray-700 text-sm flex justify-between items-center hover:bg-gray-50">
-                        ✅ 1. Tamamlanan Özellikler
-                        <span className="transform group-open:rotate-180 transition-transform text-gray-400 text-xs">▼</span>
-                    </summary>
-                    <div className="px-4 py-3 text-xs text-gray-600 border-t border-gray-50 space-y-2 bg-gray-50/30">
-                        <p><strong>ARAS AI Asistan:</strong> Gemini 2.0 Flash entegrasyonu, Bağlamsal zeka (Stok, Satış, Hava Durumu), Sesli Komut (STT/TTS) ve Sıfır-API Akıllı Komut seti tamamlandı.</p>
-                        <p><strong>Altyapı:</strong> Canlı Hava Durumu entegrasyonu, Rate Limiting (50/gün), Hafıza sistemi ve interaktif bildirimler yayında.</p>
-                    </div>
-                </details>
-
-                <details className="group bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm">
-                    <summary className="px-4 py-3 cursor-pointer font-bold text-gray-700 text-sm flex justify-between items-center hover:bg-gray-50">
-                        🚀 2. Gelecek Aşama Planı
-                        <span className="transform group-open:rotate-180 transition-transform text-gray-400 text-xs">▼</span>
-                    </summary>
-                    <div className="px-4 py-3 text-xs text-gray-600 border-t border-gray-50 space-y-3 bg-gray-50/30">
-                        <div className="bg-emerald-50 p-2 rounded-lg border border-emerald-100">
-                            <span className="font-bold text-emerald-600">✅ Aşama 1: Bulut Geçişi (Tamamlandı):</span>
-                            <p className="mt-1">SQLite'dan Supabase(PostgreSQL)'e geçiş. Backend Render.com, Frontend Vercel ile canlıya alındı.</p>
-                        </div>
-                        <div className="bg-indigo-50 p-2 rounded-lg border border-indigo-100">
-                            <span className="font-bold text-indigo-600">⏳ Aşama 2: Kullanıcı Verisi & Bulut Hafızası (Sıradaki):</span>
-                            <p className="mt-1">Kullanıcı profilleri, kişisel tercihler ve AI sohbet geçmişinin yerel tarayıcı yerine Supabase veritabanında kalıcı ve güvenli olarak saklanması.</p>
-                        </div>
-                        <div>
-                            <span className="font-bold text-gray-700">Aşama 3: Forecasting 2.0:</span>
-                            <p className="mt-1">XGBoost modeline geçiş. Hava durumu ve mevsimsellik etkilerinin tahminlere daha derinlemesine dahil edilmesi.</p>
-                        </div>
-                    </div>
-                </details>
-
-                <details className="group bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm">
-                    <summary className="px-4 py-3 cursor-pointer font-bold text-gray-700 text-sm flex justify-between items-center hover:bg-gray-50">
-                        📈 3. Performans & Limitler
-                        <span className="transform group-open:rotate-180 transition-transform text-gray-400 text-xs">▼</span>
-                    </summary>
-                    <div className="px-4 py-3 text-xs text-gray-600 border-t border-gray-50 bg-gray-50/30">
-                        <ul className="list-disc pl-4 space-y-1">
-                            <li><strong>AI Kotası:</strong> 50 istek/gün (Garantili ücretsiz)</li>
-                            <li><strong>Hız:</strong> Sayfa navigasyon &lt; 50ms, AI Yanıt &lt; 1.5s</li>
-                            <li><strong>Veri:</strong> Mevcut DB &lt; 5MB (Hafif ve optimize)</li>
-                        </ul>
-                    </div>
-                </details>
-            </div>
-        </div>
-
-        <div className="border-t border-gray-100 pt-8">
-            <h3 className="text-sm font-bold text-gray-900 mb-4">Emeği Geçenler</h3>
+        <div className="border-t border-gray-100 pt-8 pb-4">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">RetailDSS Projesi</h3>
             <div className="flex items-center justify-center space-x-2 text-gray-500 text-sm">
-                <span>Designed & Developed by</span>
-                <a href="#" className="font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">İbrahim Türkyılmaz</a>
-                <span>&</span>
-                <span className="font-semibold text-indigo-600">Google Gemini</span>
+                <span>Created by</span>
+                <span className="font-bold text-gray-800">İbrahim Türkyılmaz</span>
             </div>
-            <p className="text-xs text-gray-400 mt-4">© 2026 RetailDSS — ARAS AI Powered. Tüm hakları saklıdır.</p>
+            <div className="mt-2 text-xs text-gray-400">
+                &copy; {new Date().getFullYear()} Tüm Hakları Saklıdır.
+            </div>
         </div>
+    </div>
+);
+
+const StatsCard = ({ label, value, sub, color, bg }) => (
+    <div className={`p-4 rounded-xl border border-gray-100 shadow-sm ${bg} bg-opacity-30`}>
+        <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{label}</div>
+        <div className={`text-lg font-bold ${color}`}>{value}</div>
+        <div className="text-[10px] text-gray-500 font-medium mt-0.5">{sub}</div>
     </div>
 );
 
