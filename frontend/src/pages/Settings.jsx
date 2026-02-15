@@ -608,23 +608,9 @@ const AboutSection = () => (
                     <div className="px-5 py-4 flex flex-col gap-2">
                         <div className="flex items-center gap-3">
                             <div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold animate-pulse">2</div>
-                            <span className="font-bold text-indigo-700 text-sm">Faz 2: Kullanıcı Odaklı Veri & Kalıcılık</span>
+                            <span className="font-bold text-indigo-700 text-sm">Faz 2: İleri Seviye Tahminleme (Forecasting 2.0)</span>
                         </div>
                         <p className="text-xs text-gray-600 pl-9 leading-relaxed">
-                            Kullanıcı profilleri, kişisel ayarlar, favori raporlar ve <strong>ARAS AI sohbet geçmişi</strong> artık tarayıcı önbelleği yerine güvenli bulut veritabanında saklanacak.
-                            <br /><span className="inline-block mt-1 text-indigo-500 font-medium text-[10px]">• Hedef: Kesintisiz deneyim ve cihazlar arası senkronizasyon.</span>
-                        </p>
-                    </div>
-                </div>
-
-                {/* Gelecek */}
-                <div className="group bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-all opacity-80 hover:opacity-100">
-                    <div className="px-5 py-4 flex flex-col gap-2">
-                        <div className="flex items-center gap-3">
-                            <div className="w-6 h-6 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center text-xs font-bold">3</div>
-                            <span className="font-bold text-gray-700 text-sm">Faz 3: İleri Seviye Tahminleme (Forecasting 2.0)</span>
-                        </div>
-                        <p className="text-xs text-gray-500 pl-9 leading-relaxed">
                             XGBoost ve LightGBM gibi gelişmiş makine öğrenmesi modellerinin entegrasyonu. Hava durumu verisinin tahmin başarısına etkisinin maksimize edilmesi.
                         </p>
                     </div>
