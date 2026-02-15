@@ -30,7 +30,20 @@ retail.db
 *.pdf
 frontend-icin-ornek-gorsel/
 
+# Generated Data & Models
+*.csv
+backend/models_saved/
+backend/results.txt
+backend/db_analysis_output.txt
+backend/output.txt
+backend/test_results.log
+backend/backend_error.txt
+backend/backend_log.txt
+backend/api_test_report.txt
+
 # Sensitive/Large Files
 END401*.pdf
 Ibrahim-Turkyilmaz*.pdf
 frontend/build_final_error.txt
+frontend/build_error*.txt
+frontend/build.log
