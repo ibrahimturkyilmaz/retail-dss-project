@@ -1,0 +1,26 @@
+# render.yaml — Render Blueprint (IaC)
+# Bu dosya Render.com'da otomatik deploy ayarlarını tanımlar.
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: retail-dss-api
+    runtime: python
+    region: frankfurt
+    plan: free
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && gunicorn main:app -w 2 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT --timeout 120
+    envVars:
+      - key: DATABASE_URL
+        sync: false  # Manuel girilecek (Supabase URL)
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: WEATHER_API_KEY
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true  # Render otomatik üretecek
+      - key: ALLOWED_ORIGINS
+        value: http://localhost:5173
+      - key: PYTHON_VERSION
+        value: 3.11.0
+    healthCheckPath: /

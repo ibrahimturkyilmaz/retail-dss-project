@@ -16,6 +16,10 @@ class Settings:
     
     # AI & Dış Servisler
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+    WEATHER_API_KEY: str = os.getenv("WEATHER_API_KEY", "")
+    
+    # CORS — Vercel URL + localhost
+    ALLOWED_ORIGINS: str = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173")
     
     # Check if testing mode
     TESTING: bool = os.getenv("TESTING", "False").lower() == "true"

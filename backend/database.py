@@ -15,8 +15,13 @@ if "sqlite" in SQLALCHEMY_DATABASE_URL:
         SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
     )
 else:
-    # PostgreSQL (Supabase) için bağlantı ayarı
-    engine = create_engine(SQLALCHEMY_DATABASE_URL)
+    # PostgreSQL (Supabase) için bağlantı ayarı — Connection Pooling
+    engine = create_engine(
+        SQLALCHEMY_DATABASE_URL,
+        pool_size=5,
+        max_overflow=10,
+        pool_pre_ping=True  # Bağlantı kopmuşsa otomatik yenile
+    )
 
 # Veritabanı oturumu (Session) oluşturucu
 # autocommit=False: İşlemleri biz onaylamadan kaydetme (Güvenlik)

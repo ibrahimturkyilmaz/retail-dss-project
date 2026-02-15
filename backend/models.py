@@ -86,6 +86,7 @@ class Sale(Base):
     id = Column(Integer, primary_key=True, index=True)
     store_id = Column(Integer, ForeignKey("stores.id"))
     product_id = Column(Integer, ForeignKey("products.id"))
+    customer_id = Column(Integer, ForeignKey("customers.id"), nullable=True)
     date = Column(Date, index=True)
     quantity = Column(Integer) # Renamed from amount for consistency
     total_price = Column(Float) # Toplam tutar (amount * price) - Analiz için kritik

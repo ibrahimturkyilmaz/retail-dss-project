@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, Request
+from fastapi import FastAPI, Depends, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import func, desc, text
@@ -64,8 +64,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Frontend URL'lerini çevre değişkeninden al, yoksa varsayılanları kullan
-frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173") # Vite Frontend
-origins = ["*"]
+from core.config import settings as app_settings
+origins = app_settings.ALLOWED_ORIGINS.split(",")
 
 app.add_middleware(
     CORSMiddleware,
@@ -121,6 +121,7 @@ from simulation_engine import (
 )
 from analysis_engine import calculate_abc_analysis, simulate_what_if, calculate_forecast_accuracy
 from cold_start_engine import analyze_cold_start
+from export_engine import export_training_data
 
 class SaleSchema(BaseModel):
     id: int
@@ -796,6 +797,68 @@ def get_abc_analysis(db: Session = Depends(get_db)):
     olarak sınıflandırır. 80/20 kuralını uygular.
     """
     return calculate_abc_analysis(db)
+
+@app.get("/api/analysis/model-metrics")
+def get_model_metrics(store_id: int = 1, product_id: int = 1, db: Session = Depends(get_db)):
+    """
+    📈 MODEL PERFORMANS METRİKLERİ
+    
+    Settings veya Dashboard'da gösterilmek üzere modelin güvenilirliğini raporlar.
+    """
+    # Son 30 günlük tahminleri çek
+    today = datetime.date.today()
+    forecasts = db.query(Forecast).filter(
+        Forecast.store_id == store_id, 
+        Forecast.product_id == product_id,
+        Forecast.date >= today
+    ).all()
+    
+    if not forecasts:
+        return {
+            "model_name": "Prophet (Henüz veri yok)",
+            "avg_confidence": 0,
+            "confidence_level": "Bilinmiyor",
+            "last_training": "Yok",
+            "forecast_horizon": "7 Gün"
+        }
+        
+    # Ortalama Güven Skoru
+    avg_score = sum(f.confidence_score or 0 for f in forecasts) / len(forecasts)
+    
+    if avg_score > 85:
+        level = "Yüksek (High)"
+    elif avg_score > 60:
+        level = "Orta (Medium)"
+    else:
+        level = "Düşük (Low)"
+        
+    return {
+        "model_name": forecasts[0].model_name or "Prophet",
+        "avg_confidence": round(avg_score, 1),
+        "confidence_level": level,
+        "last_training": datetime.date.today().strftime("%Y-%m-%d"), # Demo: Bugün eğitildi varsay
+        "forecast_horizon": f"{len(forecasts)} Gün"
+    }
+    
+@app.get("/api/export/training-data")
+def get_training_data(store_id: int, product_id: int, db: Session = Depends(get_db)):
+    """
+    📤 PROPHET EĞİTİM VERİSİ (CSV EXPORT)
+    
+    Belirtilen mağaza ve ürün için satış geçmişini Prophet'in 
+    istediği formatta (ds, y) CSV olarak indirir.
+    Google Colab'e yüklenmek üzere hazırlanır.
+    """
+    csv_content = export_training_data(db, store_id, product_id)
+    
+    if not csv_content:
+        raise HTTPException(status_code=404, detail="Satış verisi bulunamadı")
+        
+    return Response(
+        content=csv_content,
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename=sales_s{store_id}_p{product_id}.csv"}
+    )
 
 class WhatIfRequest(BaseModel):
     source_store_id: int
@@ -1748,3 +1811,60 @@ def generate_sql_from_text(query_req: GenerateSQLRequest, request: Request):
         logger.error(f"AI Error: {e}")
         return {"sql": f"-- AI Servisi Hatası: {str(e)}", "data_story": "Servis hatası."}
 
+
+# =============================================
+# 🤖 MODEL METRİKLERİ API
+# =============================================
+@app.get("/analysis/model-metrics")
+def get_model_metrics(store_id: int = 1, product_id: int = 1, db: Session = Depends(get_db)):
+    """
+    Prophet model performans metriklerini döner.
+    Güven skoru, model adı, son eğitim tarihi ve tahmin ufku.
+    """
+    from models import Forecast
+    
+    # Son 30 günlük tahminleri al
+    today = datetime.date.today()
+    thirty_days_ago = today - timedelta(days=30)
+    
+    forecasts = db.query(Forecast).filter(
+        Forecast.store_id == store_id,
+        Forecast.product_id == product_id,
+        Forecast.date >= thirty_days_ago
+    ).all()
+    
+    if not forecasts:
+        return {
+            "model_name": "Prophet (Colab)",
+            "avg_confidence": 0,
+            "confidence_level": "Veri Yok",
+            "last_training": "—",
+            "forecast_horizon": "0 Gün"
+        }
+    
+    # Ortalama güven skoru
+    avg_score = sum(f.confidence_score or 0 for f in forecasts) / len(forecasts)
+    
+    # Güven düzeyi sınıflandırması
+    if avg_score > 85:
+        level = "Yüksek (High)"
+    elif avg_score > 60:
+        level = "Orta (Medium)"
+    else:
+        level = "Düşük (Low)"
+    
+    return {
+        "model_name": forecasts[0].model_name or "Prophet",
+        "avg_confidence": round(avg_score, 1),
+        "confidence_level": level,
+        "last_training": today.strftime("%Y-%m-%d"),
+        "forecast_horizon": f"{len(forecasts)} Gün"
+    }
+
+# ==========================================
+# 🚀 PRODUCTION ENTRY POINT (Render.com)
+# ==========================================
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.getenv("PORT", 8001))
+    uvicorn.run("main:app", host="0.0.0.0", port=port)

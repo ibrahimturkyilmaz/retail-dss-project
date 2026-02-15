@@ -12,10 +12,14 @@ SQLALCHEMY_DATABASE_URL = settings.DATABASE_URL
 fake = faker.Faker('tr_TR')
 
 def seed_data():
-    engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+    if "sqlite" in SQLALCHEMY_DATABASE_URL:
+        engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+    else:
+        engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     
-    print("Tablolar oluşturuluyor (SQLite)...")
+    db_type = "PostgreSQL (Supabase)" if "postgresql" in SQLALCHEMY_DATABASE_URL else "SQLite"
+    print(f"Tablolar oluşturuluyor ({db_type})...")
     Base.metadata.drop_all(bind=engine) # Temiz başlangıç
     Base.metadata.create_all(bind=engine)
     
@@ -114,7 +118,7 @@ def seed_data():
     print("Satış geçmişi oluşturuluyor (Bulk Insert kullanılıyor)...")
     
     end_date = datetime.now()
-    start_date = end_date - timedelta(days=365)
+    start_date = end_date - timedelta(days=730) # 2 Yıllık Veri (Prophet için)
     
     sales_mappings = [] # Dict list for bulk_insert_mappings
     total_sales_count = 0
