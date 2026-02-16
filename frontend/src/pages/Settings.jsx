@@ -12,7 +12,8 @@ import {
     DocumentTextIcon,
     TableCellsIcon,
     CpuChipIcon,
-    PresentationChartLineIcon
+    PresentationChartLineIcon,
+    LockClosedIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
 import axios from '../api/axios';
@@ -527,123 +528,204 @@ const FaqItem = ({ q, a }) => (
 );
 
 const AboutSection = () => (
-    <div className="max-w-2xl animate-fade-in mx-auto text-center">
-        <div className="mb-8 relative inline-block">
-            <div className="absolute -inset-4 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full blur opacity-25 animate-pulse"></div>
-            <img src="/logo-icon.svg" className="w-24 h-24 relative z-10 mx-auto transform transition-transform hover:scale-105 duration-300" alt="Logo" onError={(e) => { e.target.style.display = 'none' }} />
-            {/* Logo yoksa fallback ikon */}
-            <div className="w-24 h-24 bg-gradient-to-br from-indigo-600 to-blue-700 rounded-2xl mx-auto flex items-center justify-center text-white shadow-xl relative z-0">
-                <BuildingOfficeIcon className="w-12 h-12" />
+    <div className="max-w-4xl mx-auto space-y-12 animate-fade-in">
+
+        {/* Header Section */}
+        <div className="text-center space-y-4">
+            <div className="inline-flex items-center justify-center p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg mb-4">
+                <BuildingOfficeIcon className="w-10 h-10 text-white" />
             </div>
+            <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">RetailDSS <span className="text-indigo-600">Pro</span></h1>
+            <p className="text-lg text-slate-500 max-w-2xl mx-auto">
+                Perakende operasyonlarını yapay zeka ve veri analitiği ile optimize eden, bulut tabanlı yeni nesil karar destek sistemi.
+            </p>
         </div>
 
-        <h2 className="text-4xl font-extrabold text-gray-900 mb-2 tracking-tight">RetailDSS <span className="text-indigo-600">Pro</span></h2>
-        <p className="text-sm text-gray-500 font-semibold uppercase tracking-widest mb-2">Bulut Tabanlı Karar Destek Sistemi</p>
-        <p className="text-lg text-gray-600 max-w-lg mx-auto mb-10 leading-relaxed">
-            Perakende operasyonlarını yapay zeka ve veri analitiği ile optimize eden yeni nesil yönetim platformu.
-        </p>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 text-left">
-            <StatsCard label="Versiyon" value="v2.1.0" sub="Cloud Stable" color="text-indigo-600" bg="bg-indigo-50" />
-            <StatsCard label="Geliştirici" value="İbrahim Türkyılmaz" sub="Endüstri Müh." color="text-emerald-600" bg="bg-emerald-50" />
-            <StatsCard label="Altyapı" value="Supabase" sub="PostgreSQL" color="text-blue-600" bg="bg-blue-50" />
-        </div>
-
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8 text-left">
-            <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-                <CpuChipIcon className="w-4 h-4" />
-                Modern Teknoloji Yığını
+        {/* 1. İş Analitiği Perspektifi (Business Analytics Manager) */}
+        <section>
+            <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-blue-50 rounded-lg">
+                    <PresentationChartLineIcon className="w-6 h-6 text-blue-600" />
+                </div>
+                <div>
+                    <h2 className="text-xl font-bold text-slate-900">İş Değeri & Strateji</h2>
+                    <p className="text-sm text-slate-500">Operasyonel verimlilik ve finansal etki analizi</p>
+                </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-                <TechBadge name="React 18" color="text-sky-600 bg-sky-50 border-sky-100" />
-                <TechBadge name="FastAPI" color="text-emerald-600 bg-emerald-50 border-emerald-100" />
-                <TechBadge name="Supabase" color="text-green-600 bg-green-50 border-green-100" />
-                <TechBadge name="PostgreSQL" color="text-blue-600 bg-blue-50 border-blue-100" />
-                <TechBadge name="Render" color="text-gray-600 bg-gray-50 border-gray-200" />
-                <TechBadge name="Vercel" color="text-black bg-gray-100 border-gray-300" />
-                <TechBadge name="Gemini 2.0 Flash" color="text-amber-600 bg-amber-50 border-amber-100" />
-                <TechBadge name="Web Speech API" color="text-rose-600 bg-rose-50 border-rose-100" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <BusinessCard
+                    title="Stok Devir Hızı"
+                    value="%35 Artış"
+                    desc="Robin Hood algoritması ile ölü stokların azaltılması."
+                    trend="up"
+                />
+                <BusinessCard
+                    title="Kayıp Satışlar"
+                    value="%20 Azalış"
+                    desc="Kritik stok uyarıları sayesinde yok satmaların önlenmesi."
+                    trend="down"
+                    good
+                />
+                <BusinessCard
+                    title="Karar Süresi"
+                    value="15dk → 10sn"
+                    desc="What-If simülasyonları ile anlık stratejik kararlar."
+                    trend="down"
+                    good
+                />
             </div>
-        </div>
+        </section>
 
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8 text-left">
-            <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-                <span className="text-lg">✨</span> Temel Özellikler
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-600">
-                <div className="flex items-center gap-2"><CheckCircleIcon className="w-5 h-5 text-emerald-500" /> ARAS AI Sesli Asistan</div>
-                <div className="flex items-center gap-2"><CheckCircleIcon className="w-5 h-5 text-emerald-500" /> Hava Durumu Farkındalığı</div>
-                <div className="flex items-center gap-2"><CheckCircleIcon className="w-5 h-5 text-emerald-500" /> Robin Hood Transfer</div>
-                <div className="flex items-center gap-2"><CheckCircleIcon className="w-5 h-5 text-emerald-500" /> ABC/XYZ Analizi</div>
-                <div className="flex items-center gap-2"><CheckCircleIcon className="w-5 h-5 text-emerald-500" /> What-If Simülasyon</div>
-                <div className="flex items-center gap-2"><CheckCircleIcon className="w-5 h-5 text-emerald-500" /> Sesli Navigasyon</div>
-                <div className="flex items-center gap-2"><CheckCircleIcon className="w-5 h-5 text-emerald-500" /> Dark Mode</div>
-                <div className="flex items-center gap-2"><CheckCircleIcon className="w-5 h-5 text-emerald-500" /> PDF/Excel Export</div>
-            </div>
-        </div>
-
-        <div className="text-left mb-10">
-            <div className="flex items-center justify-between mb-4 px-1">
-                <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">Geliştirme Yol Haritası</div>
-                <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">Canlı Sistem</span>
+        {/* 2. Teknoloji Perspektifi (Technology Manager) */}
+        <section>
+            <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-indigo-50 rounded-lg">
+                    <CpuChipIcon className="w-6 h-6 text-indigo-600" />
+                </div>
+                <div>
+                    <h2 className="text-xl font-bold text-slate-900">Teknoloji Mimarisi</h2>
+                    <p className="text-sm text-slate-500">Modern, ölçeklenebilir ve güvenli altyapı</p>
+                </div>
             </div>
 
-            <div className="space-y-3">
-                {/* Tamamlanan */}
-                <div className="group bg-white rounded-xl border border-emerald-100/50 overflow-hidden shadow-sm hover:shadow-md transition-all">
-                    <div className="px-5 py-4 flex flex-col gap-2">
-                        <div className="flex items-center gap-3">
-                            <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold">✓</div>
-                            <span className="font-bold text-gray-800 text-sm">Faz 1: Bulut Dönüşümü (Tamamlandı)</span>
-                        </div>
-                        <p className="text-xs text-gray-500 pl-9 leading-relaxed">
-                            Sistem, yerel SQLite veritabanından ölçeklenebilir <strong>Supabase (PostgreSQL)</strong> altyapısına taşındı. Backend <strong>Render</strong>, Frontend <strong>Vercel</strong> üzerinde yayınlandı.
-                        </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Tech Stack Card */}
+                <div className="bg-slate-900 rounded-2xl p-6 text-white shadow-xl overflow-hidden relative group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl -mr-10 -mt-10 group-hover:bg-indigo-500/30 transition-all"></div>
+                    <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                        <KeyIcon className="w-5 h-5 text-indigo-400" />
+                        Modern Stack
+                    </h3>
+                    <div className="grid grid-cols-2 gap-y-4 gap-x-2">
+                        <TechItem label="Frontend" value="React 18 + Vite" />
+                        <TechItem label="Backend" value="Python FastAPI" />
+                        <TechItem label="Database" value="Supabase (PostgreSQL)" />
+                        <TechItem label="AI Engine" value="Gemini 2.0 + Prophet" />
                     </div>
                 </div>
 
-                {/* Aktif / Sıradaki */}
-                <div className="group bg-gradient-to-r from-indigo-50 to-white rounded-xl border border-indigo-200 overflow-hidden shadow-sm relative ring-1 ring-indigo-100">
-                    <div className="absolute top-0 right-0 bg-indigo-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">ŞU AN</div>
-                    <div className="px-5 py-4 flex flex-col gap-2">
-                        <div className="flex items-center gap-3">
-                            <div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold animate-pulse">2</div>
-                            <span className="font-bold text-indigo-700 text-sm">Faz 2: İleri Seviye Tahminleme (Forecasting 2.0)</span>
-                        </div>
-                        <p className="text-xs text-gray-600 pl-9 leading-relaxed">
-                            XGBoost ve LightGBM gibi gelişmiş makine öğrenmesi modellerinin entegrasyonu. Hava durumu verisinin tahmin başarısına etkisinin maksimize edilmesi.
-                        </p>
-                    </div>
+                {/* Cloud & Security Card */}
+                <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden group">
+                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-emerald-500/20 rounded-full blur-2xl -ml-6 -mb-6 group-hover:bg-emerald-500/30 transition-all"></div>
+                    <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                        <LockClosedIcon className="w-5 h-5 text-emerald-400" />
+                        Cloud & Security
+                    </h3>
+                    <ul className="space-y-3 text-sm text-slate-300">
+                        <li className="flex items-center gap-2">
+                            <CheckCircleIcon className="w-4 h-4 text-emerald-500" />
+                            <span><strong>Serverless:</strong> Vercel & Render Dağıtık Mimari</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                            <CheckCircleIcon className="w-4 h-4 text-emerald-500" />
+                            <span><strong>RLS:</strong> Row Level Security ile Veri İzolasyonu</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                            <CheckCircleIcon className="w-4 h-4 text-emerald-500" />
+                            <span><strong>Realtime:</strong> WebSocket ile Anlık Veri Akışı</span>
+                        </li>
+                    </ul>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <div className="border-t border-gray-100 pt-8 pb-4">
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">RetailDSS Projesi</h3>
-            <div className="flex items-center justify-center space-x-2 text-gray-500 text-sm">
-                <span>Created by</span>
-                <span className="font-bold text-gray-800">İbrahim Türkyılmaz</span>
+        {/* 3. Proje Yol Haritası (Timeline) */}
+        <section>
+            <div className="flex items-center gap-3 mb-8">
+                <div className="p-2 bg-emerald-50 rounded-lg">
+                    <DocumentTextIcon className="w-6 h-6 text-emerald-600" />
+                </div>
+                <div>
+                    <h2 className="text-xl font-bold text-slate-900">Gelişim Yolculuğu</h2>
+                    <p className="text-sm text-slate-500">Dünden yarına proje evrimi</p>
+                </div>
             </div>
-            <div className="mt-2 text-xs text-gray-400">
-                &copy; {new Date().getFullYear()} Tüm Hakları Saklıdır.
+
+            <div className="relative border-l-2 border-slate-200 ml-3 space-y-8 pb-4">
+                <RoadmapItem
+                    date="Q4 2025"
+                    title="Genesis (Başlangıç)"
+                    desc="MVP tasarımı, yerel prototip ve SQLite veritabanı. Temel stok takibi."
+                    status="past"
+                />
+                <RoadmapItem
+                    date="Q1 2026 (Erken)"
+                    title="İleri Analitik"
+                    desc="Prophet ile talep tahmini ve 'Robin Hood' transfer algoritmasının doğuşu."
+                    status="past"
+                />
+                <RoadmapItem
+                    date="Q1 2026 (Şu An)"
+                    title="Bulut Dönüşümü & Entegrasyon"
+                    desc="Supabase geçişi, Chat/Video modülleri, RLS güvenliği ve Gemini 2.0 entegrasyonu."
+                    status="current"
+                />
+                <RoadmapItem
+                    date="Q2 2026+"
+                    title="Gelecek Vizyonu"
+                    desc="React Native mobil uygulama, IoT akıllı raf entegrasyonu ve Blockchain tabanlı tedarik zinciri."
+                    status="future"
+                />
             </div>
+        </section>
+
+        <div className="border-t border-slate-100 pt-8 pb-4 text-center">
+            <p className="text-slate-400 text-sm">RetailDSS Pro &copy; {new Date().getFullYear()} — <span className="font-semibold text-slate-600">İbrahim Türkyılmaz</span> tarafından geliştirilmiştir.</p>
         </div>
     </div>
 );
 
-const StatsCard = ({ label, value, sub, color, bg }) => (
-    <div className={`p-4 rounded-xl border border-gray-100 shadow-sm ${bg} bg-opacity-30`}>
-        <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{label}</div>
-        <div className={`text-lg font-bold ${color}`}>{value}</div>
-        <div className="text-[10px] text-gray-500 font-medium mt-0.5">{sub}</div>
+// --- About Sub-components ---
+
+const BusinessCard = ({ title, value, desc, trend, good }) => (
+    <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+        <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">{title}</div>
+        <div className="flex items-end gap-2 mb-2">
+            <span className="text-2xl font-black text-slate-800">{value}</span>
+            {trend && (
+                <span className={`text-xs font-bold px-1.5 py-0.5 rounded mb-1 ${(trend === 'up' && !good) || (trend === 'down' && good)
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : 'bg-indigo-100 text-indigo-700'
+                    }`}>
+                    {trend === 'up' ? '↗' : '↘'}
+                </span>
+            )}
+        </div>
+        <p className="text-xs text-slate-500 leading-relaxed">{desc}</p>
     </div>
 );
 
-const TechBadge = ({ name, color }) => (
-    <span className={`px-2.5 py-1 rounded-md text-xs font-bold border border-transparent ${color}`}>
-        {name}
-    </span>
+const TechItem = ({ label, value }) => (
+    <div>
+        <div className="text-[10px] text-slate-400 font-bold uppercase">{label}</div>
+        <div className="text-sm font-semibold text-slate-200">{value}</div>
+    </div>
 );
+
+const RoadmapItem = ({ date, title, desc, status }) => {
+    let dotClass = "bg-slate-300 ring-4 ring-white";
+    let textClass = "text-slate-500";
+    let titleClass = "text-slate-700";
+
+    if (status === 'current') {
+        dotClass = "bg-indigo-600 ring-4 ring-indigo-100 scale-125";
+        textClass = "text-indigo-600";
+        titleClass = "text-indigo-900";
+    } else if (status === 'future') {
+        dotClass = "bg-white border-2 border-slate-300 ring-4 ring-white";
+        textClass = "text-slate-400";
+        titleClass = "text-slate-500";
+    }
+
+    return (
+        <div className="relative pl-8">
+            <div className={`absolute left-[-9px] top-0 w-5 h-5 rounded-full ${dotClass} transition-all`}></div>
+            <div className={`text-xs font-bold mb-1 ${textClass}`}>{date} {status === 'current' && <span className="bg-indigo-600 text-white px-1.5 rounded ml-2">AKTİF</span>}</div>
+            <h4 className={`text-lg font-bold mb-2 ${titleClass}`}>{title}</h4>
+            <p className="text-sm text-slate-500 leading-relaxed max-w-lg">{desc}</p>
+        </div>
+    );
+};
 
 // ==========================================
 // 📤 RAPOR DIŞA AKTARMA (Reports Export)
