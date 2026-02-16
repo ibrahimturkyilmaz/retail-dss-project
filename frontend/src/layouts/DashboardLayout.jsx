@@ -5,6 +5,7 @@ import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { useTheme } from '../context/ThemeContext';
 
 import CalendarDrawer from '../components/widgets/CalendarDrawer';
+import ChatDrawer from '../components/ChatDrawer';
 
 const DashboardLayout = () => {
     const [isZenMode, setIsZenMode] = useState(false);
@@ -14,28 +15,28 @@ const DashboardLayout = () => {
         <div className={`min-h-screen font-sans antialiased selection:bg-blue-500 selection:text-white relative transition-all duration-500 ${isDark ? 'bg-slate-950 text-slate-200' : 'bg-muted/30 text-slate-900'}`}>
             {/* Background Gradient — Light / Dark */}
             <div className={`fixed inset-0 -z-10 transition-all duration-700 ${isDark
-                    ? 'bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'
-                    : 'bg-gradient-to-br from-slate-50 to-slate-100'
+                ? 'bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'
+                : 'bg-gradient-to-br from-slate-50 to-slate-100'
                 } ${isZenMode ? 'opacity-50' : 'opacity-100'}`} />
 
             {/* Ambient Glow Orbs — Light: Blue/Rose, Dark: Indigo/Purple */}
             <div className={`fixed top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full blur-[120px] -z-10 pointer-events-none transition-all duration-1000 ${isDark
-                    ? 'bg-indigo-600/15 mix-blend-screen'
-                    : 'bg-blue-400/20 mix-blend-multiply'
+                ? 'bg-indigo-600/15 mix-blend-screen'
+                : 'bg-blue-400/20 mix-blend-multiply'
                 } ${isZenMode ? 'opacity-80' : 'opacity-100'}`} />
             <div className={`fixed bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full blur-[120px] -z-10 pointer-events-none transition-all duration-1000 ${isDark
-                    ? 'bg-purple-600/10 mix-blend-screen'
-                    : 'bg-rose-400/20 mix-blend-multiply'
+                ? 'bg-purple-600/10 mix-blend-screen'
+                : 'bg-rose-400/20 mix-blend-multiply'
                 } ${isZenMode ? 'opacity-80' : 'opacity-100'}`} />
 
             {/* Zen Mode Toggle */}
             <button
                 onClick={() => setIsZenMode(!isZenMode)}
                 className={`fixed bottom-6 right-6 z-50 p-3 rounded-full transition-all duration-300 shadow-2xl border ${isZenMode
-                        ? 'bg-white/10 text-slate-400 hover:text-white hover:bg-white/20 border-white/10'
-                        : isDark
-                            ? 'bg-slate-800 text-slate-400 hover:text-blue-400 border-slate-700'
-                            : 'bg-white text-slate-400 hover:text-blue-600 border-slate-200'
+                    ? 'bg-white/10 text-slate-400 hover:text-white hover:bg-white/20 border-white/10'
+                    : isDark
+                        ? 'bg-slate-800 text-slate-400 hover:text-blue-400 border-slate-700'
+                        : 'bg-white text-slate-400 hover:text-blue-600 border-slate-200'
                     }`}
                 title={isZenMode ? "Zen Modundan Çık" : "Zen Modu (Sinema)"}
             >
@@ -56,6 +57,9 @@ const DashboardLayout = () => {
 
             {/* Global Calendar Drawer */}
             <CalendarDrawer />
+
+            {/* Global Chat Drawer */}
+            <ChatDrawer />
         </div>
     );
 };

@@ -14,6 +14,7 @@ import Simulations from './pages/Simulations';
 import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
 import SqlPlayground from './components/SqlPlayground';
+import VideoMeeting from './components/VideoMeeting';
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
             <Route path="analytics" element={<Analytics />} />
             <Route path="playground" element={<SqlPlayground />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="meeting" element={<VideoMeeting />} />
 
             {/* 404 - Redirect to Dashboard */}
             <Route path="*" element={<Navigate to="/" replace />} />
