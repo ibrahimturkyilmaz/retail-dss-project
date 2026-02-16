@@ -12,14 +12,28 @@ export const AuthProvider = ({ children }) => {
         // Mevcut oturumu kontrol et
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
-            setUser(session?.user ?? null);
+
+            const sbUser = session?.user;
+            if (sbUser) {
+                sbUser.username = sbUser.user_metadata?.username || sbUser.email?.split('@')[0];
+            }
+
+            setUser(sbUser ?? null);
             setLoading(false);
         });
 
         // Oturum değişikliklerini dinle
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session);
-            setUser(session?.user ?? null);
+
+            // Supabase user objesini zenginleştir
+            const sbUser = session?.user;
+            if (sbUser) {
+                // Username yoksa email'den türet (Geriye dönük uyumluluk)
+                sbUser.username = sbUser.user_metadata?.username || sbUser.email?.split('@')[0];
+            }
+
+            setUser(sbUser ?? null);
             setLoading(false);
         });
 
