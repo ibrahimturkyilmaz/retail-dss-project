@@ -4,10 +4,11 @@ import { useAuth } from '../context/AuthContext';
 import { UserCircleIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 
 const Login = () => {
-    const [username, setUsername] = useState('');
+    const [isLogin, setIsLogin] = useState(true);
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const { login } = useAuth();
+    const { login, signUp } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -17,10 +18,17 @@ const Login = () => {
         e.preventDefault();
         setError('');
         try {
-            await login(username, password);
-            navigate(from, { replace: true });
+            if (isLogin) {
+                await login(email, password);
+                navigate(from, { replace: true });
+            } else {
+                await signUp(email, password);
+                setError('Kayıt başarılı! Giriş yapabilirsiniz.');
+                setIsLogin(true);
+            }
         } catch (err) {
-            setError('Giriş başarısız. Lütfen bilgilerinizi kontrol edin.');
+            console.error(err);
+            setError(err.message || (isLogin ? 'Giriş başarısız.' : 'Kayıt başarısız.'));
         }
     };
 
@@ -34,27 +42,27 @@ const Login = () => {
 
             <div className="relative z-10 w-full max-w-md p-8 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl">
                 <div className="text-center mb-8">
-                    <h2 className="text-3xl font-bold text-white mb-2">Hoş Geldiniz</h2>
-                    <p className="text-slate-300">Merkezi Komuta Paneline Giriş Yapın</p>
+                    <h2 className="text-3xl font-bold text-white mb-2">{isLogin ? 'Hoş Geldiniz' : 'Hesap Oluştur'}</h2>
+                    <p className="text-slate-300">{isLogin ? 'Merkezi Komuta Paneline Giriş Yapın' : 'Yeni bir RetailDSS hesabı başlatın'}</p>
                 </div>
 
                 {error && (
-                    <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200 text-sm text-center">
+                    <div className={`mb-4 p-3 rounded-lg text-sm text-center ${error.includes('başarılı') ? 'bg-green-500/20 border border-green-500/50 text-green-200' : 'bg-red-500/20 border border-red-500/50 text-red-200'}`}>
                         {error}
                     </div>
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">Kullanıcı Adı</label>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">E-posta Adresi</label>
                         <div className="relative">
                             <UserCircleIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                             <input
-                                type="text"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 className="w-full pl-10 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                                placeholder="Kullanıcı adınızı girin"
+                                placeholder="ornek@sirket.com"
                                 required
                             />
                         </div>
@@ -71,6 +79,7 @@ const Login = () => {
                                 className="w-full pl-10 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                 placeholder="••••••••"
                                 required
+                                minLength={6}
                             />
                         </div>
                     </div>
@@ -79,14 +88,16 @@ const Login = () => {
                         type="submit"
                         className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-lg transform transition-all hover:scale-[1.02] active:scale-[0.98]"
                     >
-                        Giriş Yap
+                        {isLogin ? 'Giriş Yap' : 'Kayıt Ol'}
                     </button>
                 </form>
 
-                <div className="mt-6 text-center text-xs text-slate-500">
-                    <p>Demo Hesaplar:</p>
-                    <p>admin / admin123</p>
-                    <p>user1 / user123</p>
+                <div className="mt-6 text-center text-sm text-slate-400">
+                    {isLogin ? (
+                        <p>Hesabınız yok mu? <button onClick={() => { setIsLogin(false); setError(''); }} className="text-blue-400 hover:text-blue-300 font-semibold ml-1">Kayıt Olun</button></p>
+                    ) : (
+                        <p>Zaten hesabınız var mı? <button onClick={() => { setIsLogin(true); setError(''); }} className="text-blue-400 hover:text-blue-300 font-semibold ml-1">Giriş Yapın</button></p>
+                    )}
                 </div>
             </div>
         </div>
