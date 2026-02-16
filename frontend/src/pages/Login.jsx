@@ -84,6 +84,32 @@ const Login = () => {
                         </div>
                     </div>
 
+                    <div className="pt-2">
+                        <label className="block text-sm font-medium text-slate-400 mb-2">Hızlı Giriş (Demo Hesaplar)</label>
+                        <select
+                            onChange={(e) => {
+                                if (e.target.value) {
+                                    setEmail(e.target.value);
+                                    setPassword("123456");
+                                }
+                            }}
+                            className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                        >
+                            <option value="">Hesap Seçin...</option>
+                            <option value="admin@retaildss.com">Admin (Yönetici)</option>
+                            <option value="user1@retaildss.com">Mağaza Müdürü 1</option>
+                            <option value="user2@retaildss.com">Mağaza Müdürü 2</option>
+                            <option value="user3@retaildss.com">Mağaza Müdürü 3</option>
+                            <option value="user4@retaildss.com">Mağaza Müdürü 4</option>
+                            <option value="user5@retaildss.com">Mağaza Müdürü 5</option>
+                            <option value="user6@retaildss.com">Bölge Sorumlusu 6</option>
+                            <option value="user7@retaildss.com">Bölge Sorumlusu 7</option>
+                            <option value="user8@retaildss.com">Analist 8</option>
+                            <option value="user9@retaildss.com">Analist 9</option>
+                            <option value="user10@retaildss.com">Stajyer 10</option>
+                        </select>
+                    </div>
+
                     <button
                         type="submit"
                         className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-lg transform transition-all hover:scale-[1.02] active:scale-[0.98]"
