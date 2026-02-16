@@ -18,12 +18,14 @@ Base.metadata.create_all(bind=engine)
 # --- User Seeding ---
 def seed_default_user():
     db = next(get_db())
+    
+    # Ana Admin
     admin_user = db.query(User).filter(User.username == "admin").first()
     if not admin_user:
         logger.info("Creating default admin user...")
         admin = User(
             username="admin",
-            password="123", # Basit şifre demo
+            password="123",
             email="admin@retaildss.com",
             first_name="İbrahim",
             last_name="Türkyılmaz",
@@ -31,12 +33,28 @@ def seed_default_user():
             role="admin"
         )
         db.add(admin)
+    
+    # Demo Kullanıcılar (user1 - user10)
+    for i in range(1, 11):
+        username = f"user{i}"
+        existing = db.query(User).filter(User.username == username).first()
+        if not existing:
+            user = User(
+                username=username,
+                password="123",
+                email=f"{username}@retaildss.com",
+                first_name=f"Demo",
+                last_name=f"User {i}",
+                department="Mağaza",
+                role="user"
+            )
+            db.add(user)
+    
+    try:
         db.commit()
-    else:
-        # Eski basit şifre kontrolü ile çakışmaması için şifreyi güncellemiyoruz,
-        # ancak auth context frontend'de hardcoded olduğu için backend şifresinin önemi
-        # şu an için sadece profil güncellemede.
-        pass
+    except Exception as e:
+        logger.error(f"Seeding error: {e}")
+        db.rollback()
 
 # Uygulama başlarken seed çalıştır
 seed_default_user()
@@ -202,8 +220,24 @@ def get_user_profile(username: str, db: Session = Depends(get_db)):
     Verilen kullanıcı adına sahip kullanıcının bilgilerini döner.
     """
     user = db.query(User).filter(User.username == username).first()
+    
+    # Just-In-Time (JIT) Profil Oluşturma
+    # Eğer kullanıcı Supabase ile giriş yaptıysa ama yerel DB'de yoksa otomatik oluştur
     if not user:
-        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı")
+        logger.info(f"JIT Profile Creation for: {username}")
+        user = User(
+            username=username,
+            password="123", # Placeholder
+            email=f"{username}@retaildss.com",
+            first_name=username.capitalize(),
+            last_name="Kullanıcısı",
+            department="Genel",
+            role="user"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        
     return user
 
 @app.put("/api/users/{username}")
