@@ -644,26 +644,26 @@ const AboutSection = () => (
             <div className="relative border-l-2 border-slate-200 ml-3 space-y-8 pb-4">
                 <RoadmapItem
                     date="Q4 2025"
-                    title="Genesis (Başlangıç)"
-                    desc="MVP tasarımı, yerel prototip ve SQLite veritabanı. Temel stok takibi."
+                    title="Adım 1: Genesis (Başlangıç)"
+                    desc="Proje temelleri atıldı. React 19 ve Vite modülleri ile frontend mimarisi kurgulandı. Backend için yüksek performanslı FastAPI seçildi. Yerel SQLite veri tabanı üzerinde temel stok takibi ve CRUD operasyonları hayata geçirildi."
                     status="past"
                 />
                 <RoadmapItem
                     date="Q1 2026 (Erken)"
-                    title="İleri Analitik"
-                    desc="Prophet ile talep tahmini ve 'Robin Hood' transfer algoritmasının doğuşu."
+                    title="Adım 2: İleri Analitik"
+                    desc="Veri bilimi entegrasyonu sağlandı. Meta Prophet kütüphanesi ile mevsimsellik destekli talep tahmin modelleri eğitildi. Mağazalar arası otomatik transfer önerisi sunan 'Robin Hood' algoritması geliştirildi."
                     status="past"
                 />
                 <RoadmapItem
-                    date="Q1 2026 (Şu An)"
-                    title="Bulut Dönüşümü & Entegrasyon"
-                    desc="Supabase geçişi, Chat/Video modülleri, RLS güvenliği ve Gemini 2.0 entegrasyonu."
+                    date="Q1 2026 (Şuan)"
+                    title="Adım 3: Bulut Dönüşümü (Şuan)"
+                    desc="Proje, Supabase (PostgreSQL) altyapısı ile buluta taşındı. Google Gemini 2.0 AI entegrasyonu ile 'Text-to-SQL' asistanı eklendi. RLS (Row Level Security) ile veri güvenliği sağlandı ve Vercel üzerinde canlıya alındı."
                     status="current"
                 />
                 <RoadmapItem
                     date="Q2 2026+"
-                    title="Gelecek Vizyonu"
-                    desc="React Native mobil uygulama, IoT akıllı raf entegrasyonu ve Blockchain tabanlı tedarik zinciri."
+                    title="Adım 4: Gelecek Vizyonu"
+                    desc="Genişleme fazı. Saha operasyonları için React Native mobil uygulaması, anlık stok takibi için IoT sensör (RFID) entegrasyonu ve tedarik zinciri şeffaflığı için Blockchain tabanlı akıllı kontratlar planlanmaktadır."
                     status="future"
                 />
             </div>
