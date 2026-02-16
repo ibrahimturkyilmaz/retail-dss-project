@@ -339,26 +339,30 @@ class InventorySchema(BaseModel):
 @app.get("/api/stores/{store_id}/inventory", response_model=List[InventorySchema])
 def get_store_inventory(store_id: int, db: Session = Depends(get_db)):
     """
-    📦 MAĞAZA ENVANTERİ VE TAHMİNLER
+    MAGAZA ENVANTERI VE TAHMINLER
     
-    Seçilen mağazanın stok durumunu ve gelecek 7 gün için satış tahminini getirir.
-    ABC Analizi kategorisini (A/B/C) de içerir.
+    Secilen magazanin stok durumunu ve gelecek 7 gun icin satis tahminini getirir.
+    ABC Analizi kategorisini (A/B/C) de icerir.
     """
     inventory = db.query(Inventory).filter(Inventory.store_id == store_id).all()
     results = []
     
-    # Bugünün tarihi
     today = datetime.date.today()
     next_week = today + datetime.timedelta(days=7)
 
+    forecast_sums = db.query(
+        Forecast.product_id,
+        func.sum(Forecast.predicted_quantity).label("total_predicted")
+    ).filter(
+        Forecast.store_id == store_id,
+        Forecast.date >= today,
+        Forecast.date < next_week
+    ).group_by(Forecast.product_id).all()
+
+    forecast_map = {row.product_id: row.total_predicted for row in forecast_sums}
+
     for item in inventory:
-        # Sonraki 7 günün tahminini topla
-        forecast_sum = db.query(func.sum(Forecast.predicted_quantity))\
-            .filter(Forecast.store_id == store_id, 
-                    Forecast.product_id == item.product_id,
-                    Forecast.date >= today,
-                    Forecast.date < next_week)\
-            .scalar() or 0.0
+        forecast_sum = forecast_map.get(item.product_id, 0.0)
 
         results.append({
             "product_id": item.product.id,
