@@ -20,7 +20,8 @@ else:
         SQLALCHEMY_DATABASE_URL,
         pool_size=5,
         max_overflow=10,
-        pool_pre_ping=True  # Bağlantı kopmuşsa otomatik yenile
+        pool_pre_ping=True,  # Bağlantı kopmuşsa otomatik yenile
+        connect_args={"sslmode": "require"} # Supabase için gerekli
     )
 
 # Veritabanı oturumu (Session) oluşturucu

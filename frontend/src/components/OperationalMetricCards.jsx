@@ -28,7 +28,6 @@ const OperationalMetricCards = ({ riskyCount = 0, pendingCount = 0, activeStoreC
     ];
 
     return (
-    return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             {/* 1. Riskli Mağaza Kartı */}
             <div

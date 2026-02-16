@@ -64,8 +64,20 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Frontend URL'lerini çevre değişkeninden al, yoksa varsayılanları kullan
+# Frontend URL'lerini çevre değişkeninden al
 from core.config import settings as app_settings
-origins = app_settings.ALLOWED_ORIGINS.split(",")
+
+# Varsayılan olarak Vercel ve Localhost'a izin ver
+default_origins = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://retail-dss-project.vercel.app"
+]
+
+env_origins = app_settings.ALLOWED_ORIGINS.split(",") if app_settings.ALLOWED_ORIGINS else []
+origins = list(set(default_origins + [o.strip() for o in env_origins if o.strip()]))
+
+logger.info(f"CORS Allowed Origins: {origins}")
 
 app.add_middleware(
     CORSMiddleware,
