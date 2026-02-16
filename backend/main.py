@@ -252,7 +252,7 @@ def read_sales(request: Request, skip: int = 0, limit: int = 100, db: Session = 
         })
     return results
 
-@app.get("/stores", response_model=List[StoreSchema])
+@app.get("/api/stores", response_model=List[StoreSchema])
 def read_stores(db: Session = Depends(get_db)):
     """
     🏪 MAĞAZA LİSTESİ VE DURUM ANALİZİ

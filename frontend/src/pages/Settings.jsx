@@ -121,7 +121,7 @@ const ProfileSettings = ({ user }) => {
         const fetchProfile = async () => {
             if (user?.username) {
                 try {
-                    const response = await axios.get(`/users/${user.username}`);
+                    const response = await axios.get(`/api/users/${user.username}`);
                     setFormData({
                         first_name: response.data.first_name || '',
                         last_name: response.data.last_name || '',
@@ -149,7 +149,7 @@ const ProfileSettings = ({ user }) => {
         setLoading(true);
         setMessage(null);
         try {
-            await axios.put(`/users/${user.username}`, formData);
+            await axios.put(`/api/users/${user.username}`, formData);
             setMessage({ type: 'success', text: 'Profil başarıyla güncellendi.' });
         } catch (error) {
             setMessage({ type: 'error', text: 'Güncelleme sırasında bir hata oluştu.' });

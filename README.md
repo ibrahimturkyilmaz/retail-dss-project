@@ -5,10 +5,22 @@
 ![React](https://img.shields.io/badge/React-19-cyan)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.109-green)
 ![Status](https://img.shields.io/badge/Status-Active-success)
+[![Live Demo](https://img.shields.io/badge/demo-live-orange?style=for-the-badge&logo=vercel)](https://retail-dss-project.vercel.app)
 
 RetailDSS, perakende zincirleri için geliştirilmiş, **Yapay Zeka (AI)** ve **Veri Odaklı** modern bir karar destek sistemidir. Geleneksel stok yönetiminin ötesine geçerek; dinamik talep tahmini, senaryo tabanlı simülasyonlar ve akıllı transfer önerileri ile işletmelerin verimliliğini maksimize eder.
 
 ![Dashboard Preview](https://via.placeholder.com/1200x600?text=Dashboard+Ekran+Goruntusu+Buraya)
+
+## 📸 Ekran Görüntüleri (Screenshots)
+
+### Yönetim Paneli (Dashboard)
+![Dashboard](docs/screenshots/01-dashboard.png)
+
+### AI SQL Asistanı
+![AI Playground](docs/screenshots/02-ai-playground.png)
+
+### Simülasyon Laboratuvarı
+![Simulation Lab](docs/screenshots/03-simulation.png)
 
 ---
 
