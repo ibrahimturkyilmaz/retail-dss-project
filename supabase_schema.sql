@@ -1,4 +1,4 @@
--- Supabase SQL Schema Definitions
+    -- Supabase SQL Schema Definitions
 
 -- 1. Profiles Table (sync with auth.users)
 create table public.profiles (
