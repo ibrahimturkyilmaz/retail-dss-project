@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from sqlalchemy import func
+from sqlalchemy.orm import selectinload
 from typing import List
 import datetime
 
 from database import get_db
-from models import Store, Inventory, Forecast
+from models import Store, Inventory, Forecast, Product
 from schemas import StoreSchema, InventorySchema
 
 router = APIRouter(
@@ -14,64 +16,82 @@ router = APIRouter(
 )
 
 @router.get("", response_model=List[StoreSchema])
-def read_stores(db: Session = Depends(get_db)):
+async def read_stores(db: AsyncSession = Depends(get_db)):
     """
-    🏪 MAĞAZA LİSTESİ VE DURUM ANALİZİ
+    🏪 MAĞAZALARI LİSTELE
     """
-    stores = db.query(Store).all()
+    # Features ve Inventory ilişkisini eager load yapıyoruz
+    stmt = select(Store).options(
+        selectinload(Store.features),
+        selectinload(Store.inventory)
+    )
+    result = await db.execute(stmt)
+    stores = result.scalars().all()
     
-    # [OPTIMIZASYON] Risk raporunu tek seferde çek (Bulk SQL)
-    from risk_engine import get_risk_report
-    risk_report = get_risk_report(db, stores)
-    
-    # Raporu ID ile eşleştir
-    risk_map = {r["store_id"]: r for r in risk_report}
-    
-    results = []
+    # Risk Analizi ve Stok Hesaplama
     for store in stores:
-        # Önceden hesaplanmış rapordan veriyi al
-        stats = risk_map.get(store.id, {})
+        # Toplam Stok ve Güvenlik Stoğu
+        total_stock = sum(i.quantity for i in store.inventory)
+        total_safety = sum(i.safety_stock for i in store.inventory)
         
-        results.append({
-            "id": store.id,
-            "name": store.name,
-            "store_type": store.store_type,
-            "lat": store.lat,
-            "lon": store.lon,
-            "stock": stats.get("stock", 0),
-            "safety_stock": stats.get("safety_stock", 0),
-            "risk_status": stats.get("status", "UNKNOWN")
-        })
-    return results
+        # Pydantic model bunları bekliyor, dinamik olarak ekliyoruz
+        store.stock = total_stock
+        store.safety_stock = total_safety
+        
+        # Risk Analizi
+        # Stoğu 10'un altında olan kaç çeşit ürün var?
+        result_risk = await db.execute(
+            select(func.count(Inventory.id)).filter(
+                Inventory.store_id == store.id,
+                Inventory.quantity < 10
+            )
+        )
+        risk_count = result_risk.scalar() or 0
+        
+        if risk_count > 20:
+            store.risk_status = "CRITICAL"
+        elif risk_count > 5:
+            store.risk_status = "WARNING"
+        else:
+            store.risk_status = "SAFE"
+            
+    return stores
 
 @router.get("/{store_id}/inventory", response_model=List[InventorySchema])
-def get_store_inventory(store_id: int, db: Session = Depends(get_db)):
+async def get_store_inventory(store_id: int, db: AsyncSession = Depends(get_db)):
     """
-    📦 MAĞAZA ENVANTERİ VE TAHMİNLER
+    📦 MAĞAZA STOK DURUMU
     """
-    inventory = db.query(Inventory).filter(Inventory.store_id == store_id).all()
-    results = []
+    # Ürün detaylarını ve Gelecek Tahminlerini (Forecast) dahil et
+    stmt = select(Inventory).filter(Inventory.store_id == store_id).options(
+        selectinload(Inventory.product)
+    )
+    result = await db.execute(stmt)
+    inventory_items = result.scalars().all()
     
-    # Bugünün tarihi
-    today = datetime.date.today()
-    next_week = today + datetime.timedelta(days=7)
-
-    for item in inventory:
-        # Sonraki 7 günün tahminini topla
-        forecast_sum = db.query(func.sum(Forecast.predicted_quantity))\
-            .filter(Forecast.store_id == store_id, 
-                    Forecast.product_id == item.product_id,
-                    Forecast.date >= today,
-                    Forecast.date < next_week)\
-            .scalar() or 0.0
-
-        results.append({
-            "product_id": item.product.id,
-            "product_name": item.product.name,
-            "category": item.product.category,
-            "quantity": item.quantity,
-            "safety_stock": item.safety_stock,
-            "abc_category": item.product.abc_category or "C",
-            "forecast_next_7_days": round(forecast_sum, 1)
-        })
-    return results
+    # Tahminleri al (Sonraki ay için)
+    next_month = datetime.date.today() + datetime.timedelta(days=30)
+    
+    for item in inventory_items:
+        # Bu ürün için bu mağazadaki toplam tahmin
+        result_forecast = await db.execute(
+            select(func.sum(Forecast.predicted_quantity)).filter(
+                Forecast.store_id == store_id,
+                Forecast.product_id == item.product_id,
+                Forecast.date <= next_month
+            )
+        )
+        total_forecast = result_forecast.scalar() or 0
+        
+        # Dinamik özellik ekleme (Schema'da varsa)
+        item.predicted_sales = total_forecast
+        
+        # Stok yetersiz mi?
+        if item.quantity < total_forecast:
+            item.status = "OUT_OF_STOCK_RISK"
+        elif item.quantity > total_forecast * 2:
+            item.status = "OVERSTOCK"
+        else:
+            item.status = "OPTIMAL"
+            
+    return inventory_items

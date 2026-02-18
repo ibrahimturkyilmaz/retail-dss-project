@@ -1,11 +1,16 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from database import engine, Base, get_db
+from sqlalchemy.ext.asyncio import AsyncSession
+from database import async_engine, Base, get_db, get_sync_db
 from models import User
 from core.logger import logger
+from core.config import settings
+from core.exceptions import RetailException, ResourceNotFoundException
+from core.handlers import global_exception_handler, retail_exception_handler, not_found_handler
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+import contextlib
 
 # Import Routers
 from routers import (
@@ -19,23 +24,25 @@ from routers import (
     transfers
 )
 
-from core.config import settings as app_settings
-import os
-from dotenv import load_dotenv
+# --- Lifespan Events (Startup/Shutdown) ---
+@contextlib.asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: Tabloları oluştur (Async)
+    async with async_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    
+    # Seed Data (Sync olarak çalıştırılabilir veya Async'e çevrilebilir)
+    # Basitlik için Sync Session kullanıyoruz
+    seed_default_user()
+    
+    yield
+    # Shutdown
 
-load_dotenv()
-
-# --- Limiter Setup ---
-limiter = Limiter(key_func=get_remote_address, default_limits=["120/minute"])
-
-# --- Database Setup ---
-Base.metadata.create_all(bind=engine)
-
-# --- Seeding (Simplified) ---
+# --- Seeding ---
 def seed_default_user():
-    # Only runs if no admin exists
     try:
-        db = next(get_db())
+        # Sync DB kullanıyoruz çünkü startup scripti
+        db = next(get_sync_db())
         admin_user = db.query(User).filter(User.username == "admin").first()
         if not admin_user:
             logger.info("Creating default admin user...")
@@ -53,21 +60,25 @@ def seed_default_user():
     except Exception as e:
         logger.error(f"Seeding check failed: {e}")
 
-seed_default_user()
-
 # --- App Init ---
-app = FastAPI(title="Retail DSS API", version="2.0.0")
-app.state.limiter = limiter
+app = FastAPI(
+    title=settings.PROJECT_NAME, 
+    version=settings.PROJECT_VERSION,
+    lifespan=lifespan
+)
+
+# --- Exception Handlers ---
+app.add_exception_handler(Exception, global_exception_handler)
+app.add_exception_handler(RetailException, retail_exception_handler)
+app.add_exception_handler(ResourceNotFoundException, not_found_handler)
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+# --- Limiter ---
+limiter = Limiter(key_func=get_remote_address, default_limits=["120/minute"])
+app.state.limiter = limiter
+
 # --- CORS ---
-default_origins = [
-    "http://localhost:5173",
-    "http://localhost:3000",
-    "https://retail-dss-project.vercel.app"
-]
-env_origins = app_settings.ALLOWED_ORIGINS.split(",") if app_settings.ALLOWED_ORIGINS else []
-origins = list(set(default_origins + [o.strip() for o in env_origins if o.strip()]))
+origins = settings.ALLOWED_ORIGINS.split(",")
 
 app.add_middleware(
     CORSMiddleware,
@@ -88,5 +99,5 @@ app.include_router(integrations.router)
 app.include_router(transfers.router)
 
 @app.get("/")
-def read_root():
-    return {"message": "Perakende Karar Destek Sistemi API Çalışıyor (Modüler Yapı v2)"}
+async def read_root(): 
+    return {"message": f"{settings.PROJECT_NAME} API Çalışıyor (Async Mode)"}

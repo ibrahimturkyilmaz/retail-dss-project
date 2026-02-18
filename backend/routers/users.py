@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from typing import List
 
 from database import get_db
@@ -12,20 +13,13 @@ router = APIRouter(
     tags=["users"]
 )
 
-# Not: Rate limiter 'limiter' nesnesi main.py'de tanımlı. 
-# Router'da bunu kullanmak için dependency injection veya request.state kullanılabilir.
-# Ancak basitlik için burada hard-dependency yapmaktan kaçınalım.
-# Şimdilik limiter dekoratörünü kaldıralım veya global limiter'ı import edelim.
-# Doğrusu: Limiter'ı core/security.py gibi bir yere taşımak ama şu an main.py'de.
-# Çözüm: Limiter'ı es geçebiliriz (refaktörde) veya main'den import edebiliriz (döngüsel import riski).
-# Güvenli yol: Limiter'ı şimdilik devre dışı bırakıp not düşelim, veya dependency olarak alalım.
-
 @router.get("/{username}", response_model=UserSchema)
-def get_user_profile(username: str, db: Session = Depends(get_db)):
+async def get_user_profile(username: str, db: AsyncSession = Depends(get_db)):
     """
     👤 KULLANICI PROFİLİ GETİR
     """
-    user = db.query(User).filter(User.username == username).first()
+    result = await db.execute(select(User).filter(User.username == username))
+    user = result.scalars().first()
     
     if not user:
         logger.info(f"JIT Profile Creation for: {username}")
@@ -39,17 +33,16 @@ def get_user_profile(username: str, db: Session = Depends(get_db)):
             role="user"
         )
         db.add(user)
-        db.commit()
-        db.refresh(user)
+        await db.commit()
+        await db.refresh(user)
         
     return user
 
 @router.put("/{username}")
-def update_user_profile(username: str, update_data: UserProfileUpdateSchema, request: Request, db: Session = Depends(get_db)):
-    # Limiter notu: @limiter.limit("10/minute") bu fonksiyonun üzerindeydi.
-    # Router seviyesinde limiter entegrasyonu için SlowAPI dokümantasyonuna bakınız.
+async def update_user_profile(username: str, update_data: UserProfileUpdateSchema, request: Request, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(User).filter(User.username == username))
+    user = result.scalars().first()
     
-    user = db.query(User).filter(User.username == username).first()
     if not user:
         raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı")
     
@@ -62,7 +55,7 @@ def update_user_profile(username: str, update_data: UserProfileUpdateSchema, req
     if update_data.password and len(update_data.password) > 0:
         user.password = update_data.password
         
-    db.commit()
+    await db.commit()
     return {"message": "Profil başarıyla güncellendi", "user": {
         "username": user.username,
         "first_name": user.first_name

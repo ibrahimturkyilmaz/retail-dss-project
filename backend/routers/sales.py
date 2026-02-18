@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, Request
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from sqlalchemy import desc
 from typing import List
 
 from database import get_db
-from models import Sale
+from models import Sale, Store, Product, Customer
 from schemas import SaleSchema
 
 router = APIRouter(
@@ -12,18 +13,29 @@ router = APIRouter(
     tags=["sales"]
 )
 
-# Not: Rate limiter main.py'de kaldığı için burada dekoratör kullanmıyoruz.
-# İleride global limiter eklenebilir.
-
 @router.get("", response_model=List[SaleSchema])
-def read_sales(request: Request, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+async def read_sales(request: Request, skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
     """
     💰 SATIŞ VERİLERİNİ LİSTELE
-    
-    Tüm mağazaların satış geçmişini tarih sırasına göre (en yeniden eskiye) getirir.
-    Pagination (Sayfalama) destekler: skip=atla, limit=getir.
+    Async + Eager Loading (Joined Load) ile optimize edildi.
     """
-    sales = db.query(Sale).order_by(Sale.date.desc()).offset(skip).limit(limit).all()
+    # N+1 sorununu önlemek için select ile join yapabiliriz veya lazy load kullanabiliriz.
+    # AsyncSession lazy load'u varsayılan olarak desteklemez (awaitable attributes gerekir).
+    # Bu yüzden `select(Sale).options(selectinload(Sale.store))` vb. kullanmak en iyisidir.
+    # Ancak basitlik için şimdilik scalar() ve hybrid property/lazy="selectin" kullanıyor olabiliriz.
+    # Model tanımlarını görmedim, varsayılan olarak lazy='select' ise async'de hata verir.
+    # Çözüm: Modellerde lazy='selectin' veya eager loading.
+    # Şimdilik basic select yapalım, hata alırsak lazy option ekleriz.
+    
+    from sqlalchemy.orm import selectinload
+    stmt = select(Sale).options(
+        selectinload(Sale.store),
+        selectinload(Sale.product),
+        selectinload(Sale.customer)
+    ).order_by(Sale.date.desc()).offset(skip).limit(limit)
+    
+    result = await db.execute(stmt)
+    sales = result.scalars().all()
     
     results = []
     for s in sales:

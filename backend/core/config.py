@@ -1,27 +1,33 @@
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from functools import lru_cache
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
-
-class Settings:
+class Settings(BaseSettings):
     PROJECT_NAME: str = "Retail DSS API"
-    PROJECT_VERSION: str = "1.0.0"
+    PROJECT_VERSION: str = "2.0.0"
     
     # Veritabanı
-    DATABASE_URL: str = os.getenv("DATABASE_URL") or "sqlite:///./retail.db"
+    # Varsayılan: SQLite (Sync) - Async için database.py içinde dönüşüm yapılacak.
+    DATABASE_URL: str = "sqlite:///./retail.db"
     
     # Güvenlik & CORS
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "supersecretkey")
-    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
+    SECRET_KEY: str = "supersecretkey"
+    FRONTEND_URL: str = "http://localhost:5173"
     
     # AI & Dış Servisler
-    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
-    WEATHER_API_KEY: str = os.getenv("WEATHER_API_KEY", "")
+    GEMINI_API_KEY: str = ""
+    WEATHER_API_KEY: str = ""
     
-    # CORS — Vercel URL + localhost
-    ALLOWED_ORIGINS: str = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173")
+    # CORS
+    ALLOWED_ORIGINS: str = "http://localhost:5173,http://localhost:3000,https://retail-dss-project.vercel.app"
     
-    # Check if testing mode
-    TESTING: bool = os.getenv("TESTING", "False").lower() == "true"
+    # Test Modu
+    TESTING: bool = False
+    
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
-settings = Settings()
+@lru_cache
+def get_settings():
+    return Settings()
+
+settings = get_settings()

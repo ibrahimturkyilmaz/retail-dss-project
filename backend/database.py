@@ -1,41 +1,73 @@
-# --- VERİTABANI BAĞLANTISI ---
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
 from core.config import settings
 
-# Öncelik: .env dosyasındaki DATABASE_URL (Supabase/PostgreSQL)
-# Yedek: Eğer .env yoksa veya boşsa, yerel SQLite dosyasını kullan (./retail.db)
-SQLALCHEMY_DATABASE_URL = settings.DATABASE_URL
+# --- 1. ASYNC ENGINE (FastAPI Endpointleri İçin) ---
+# URL Dönüşümü: sqlite -> sqlite+aiosqlite, postgresql -> postgresql+asyncpg
+ASYNC_DB_URL = settings.DATABASE_URL
+if "sqlite" in ASYNC_DB_URL and "+aiosqlite" not in ASYNC_DB_URL:
+    ASYNC_DB_URL = ASYNC_DB_URL.replace("sqlite://", "sqlite+aiosqlite://")
+elif "postgresql" in ASYNC_DB_URL and "+asyncpg" not in ASYNC_DB_URL:
+    ASYNC_DB_URL = ASYNC_DB_URL.replace("postgresql://", "postgresql+asyncpg://")
 
-# Bağlantı motorunu oluştur
-# check_same_thread=False sadece SQLite için gereklidir, PostgreSQL'de bu ayara gerek yok ama zarar vermez.
-if "sqlite" in SQLALCHEMY_DATABASE_URL:
-    engine = create_engine(
-        SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-    )
+# Connect args for SQLite
+# Connect args
+connect_args = {}
+if "sqlite" in ASYNC_DB_URL:
+    connect_args = {"check_same_thread": False}
 else:
-    # PostgreSQL (Supabase) için bağlantı ayarı — Connection Pooling
-    engine = create_engine(
-        SQLALCHEMY_DATABASE_URL,
-        pool_size=5,
-        max_overflow=10,
-        pool_pre_ping=True,  # Bağlantı kopmuşsa otomatik yenile
-        connect_args={"sslmode": "require"} # Supabase için gerekli
-    )
+    # PostgreSQL (PgBouncer) uyumluluğu
+    connect_args = {"statement_cache_size": 0}
 
-# Veritabanı oturumu (Session) oluşturucu
-# autocommit=False: İşlemleri biz onaylamadan kaydetme (Güvenlik)
-# autoflush=False: Değişiklikleri hemen yansıtma (Performans)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+async_engine = create_async_engine(
+    ASYNC_DB_URL,
+    echo=settings.TESTING,
+    future=True,
+    connect_args=connect_args
+)
 
-# Tüm modellerin (Tabloların) miras alacağı temel sınıf
+AsyncSessionLocal = async_sessionmaker(
+    bind=async_engine,
+    class_=AsyncSession,
+    expire_on_commit=False,
+    autoflush=False
+)
+
+# --- 2. SYNC ENGINE (Pandas & Legacy Analiz İçin) ---
+# Pandas read_sql henüz async desteklemiyor, bu yüzden sync engine'i tutuyoruz.
+sync_engine = create_engine(
+    settings.DATABASE_URL,
+    echo=False,
+    connect_args={"check_same_thread": False} if "sqlite" in settings.DATABASE_URL else {}
+)
+
+SyncSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=sync_engine)
+
 Base = declarative_base()
 
-# --- BAĞLANTIYI KULLANAN FONKSİYON ---
-# Bu fonksiyon her API isteğinde çağrılır ve iş bitince bağlantıyı kapatır.
-def get_db():
-    db = SessionLocal()
+# --- BACKWARD COMPATIBILITY ---
+engine = sync_engine
+
+# --- DEPENDENCIES ---
+
+async def get_db():
+    """
+    Asenkron veritabanı oturumu sağlar.
+    FastAPI 'async def' endpointlerinde bunu kullanın.
+    """
+    async with AsyncSessionLocal() as session:
+        try:
+            yield session
+        finally:
+            await session.close()
+
+def get_sync_db():
+    """
+    Senkron veritabanı oturumu sağlar.
+    Pandas işlemleri veya 'def' endpointlerinde bunu kullanın.
+    """
+    db = SyncSessionLocal()
     try:
         yield db
     finally:

@@ -94,6 +94,7 @@ class Sale(Base):
     # İlişkiler
     store = relationship("Store", back_populates="sales")
     product = relationship("Product", back_populates="sales")
+    customer = relationship("Customer")
 
     # --- OPTIMIZASYON ADAYLARI ---
     weather = Column(String) 

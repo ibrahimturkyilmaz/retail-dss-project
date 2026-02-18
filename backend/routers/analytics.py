@@ -6,7 +6,7 @@ import datetime
 import io
 import csv
 
-from database import get_db
+from database import get_sync_db
 from models import Sale, Product, Forecast
 from schemas import AnalyticsResponse, InventorySchema
 # Helper functions from original main.py imports (moved or assumed accessible)
@@ -19,7 +19,7 @@ router = APIRouter(
 )
 
 @router.get("/api/sales/analytics", response_model=AnalyticsResponse)
-def get_analytics(db: Session = Depends(get_db)):
+def get_analytics(db: Session = Depends(get_sync_db)):
     """
     📊 GELİŞMİŞ SATIŞ ANALİTİĞİ
     """
@@ -48,7 +48,7 @@ def get_analytics(db: Session = Depends(get_db)):
     }
 
 @router.get("/api/forecast")
-def get_forecasts(store_id: int = None, product_id: int = None, db: Session = Depends(get_db)):
+def get_forecasts(store_id: int = None, product_id: int = None, db: Session = Depends(get_sync_db)):
     """
     📈 TAHMİN SONUÇLARI
     """
@@ -74,19 +74,19 @@ def get_forecasts(store_id: int = None, product_id: int = None, db: Session = De
     return results
 
 @router.get("/api/analysis/accuracy")
-def get_forecast_accuracy(store_id: int, product_id: int, db: Session = Depends(get_db)):
+def get_forecast_accuracy(store_id: int, product_id: int, db: Session = Depends(get_sync_db)):
     return calculate_forecast_accuracy(db, store_id, product_id)
 
 @router.get("/api/analysis/cold-start")
-def get_cold_start_analysis(product_id: int, db: Session = Depends(get_db)):
+def get_cold_start_analysis(product_id: int, db: Session = Depends(get_sync_db)):
     return analyze_cold_start(db, product_id)
 
 @router.get("/api/analysis/abc")
-def get_abc_analysis(db: Session = Depends(get_db)):
+def get_abc_analysis(db: Session = Depends(get_sync_db)):
     return calculate_abc_analysis(db)
 
 @router.get("/api/analysis/model-metrics")
-def get_model_metrics(store_id: int = 1, product_id: int = 1, db: Session = Depends(get_db)):
+def get_model_metrics(store_id: int = 1, product_id: int = 1, db: Session = Depends(get_sync_db)):
     today = datetime.date.today()
     forecasts = db.query(Forecast).filter(
         Forecast.store_id == store_id, 
@@ -118,7 +118,7 @@ def get_model_metrics(store_id: int = 1, product_id: int = 1, db: Session = Depe
     }
 
 @router.get("/api/export/training-data")
-def get_training_data(store_id: int, product_id: int, db: Session = Depends(get_db)):
+def get_training_data(store_id: int, product_id: int, db: Session = Depends(get_sync_db)):
     csv_content = export_training_data(db, store_id, product_id)
     
     if not csv_content:

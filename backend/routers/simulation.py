@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 from schemas import SimulationStats, CustomScenarioRequest, WhatIfRequest
-from database import get_db
+from database import get_sync_db
 from models import Sale, Inventory, Store
 from sqlalchemy import func
 
@@ -21,31 +21,31 @@ router = APIRouter(
 )
 
 @router.post("/sales-boom")
-def trigger_sales_boom(request: Request, db: Session = Depends(get_db)):
+def trigger_sales_boom(request: Request, db: Session = Depends(get_sync_db)):
     """🚨 SİMÜLASYON: SATIŞ PATLAMASI (BOOM)"""
     msg = simulate_sales_boom(db)
     return {"message": msg, "status": "BOOM"}
 
 @router.post("/recession")
-def trigger_recession(request: Request, db: Session = Depends(get_db)):
+def trigger_recession(request: Request, db: Session = Depends(get_sync_db)):
     """📉 SİMÜLASYON: EKONOMİK DURGUNLUK (RECESSION)"""
     msg = simulate_recession(db)
     return {"message": msg, "status": "RECESSION"}
 
 @router.post("/supply-shock")
-def trigger_supply_shock(request: Request, db: Session = Depends(get_db)):
+def trigger_supply_shock(request: Request, db: Session = Depends(get_sync_db)):
     """⚠️ SİMÜLASYON: TEDARİK ZİNCİRİ KRİZİ (SUPPLY SHOCK)"""
     msg = simulate_supply_shock(db)
     return {"message": msg, "status": "SHOCK"}
 
 @router.post("/reset")
-def trigger_reset(request: Request, db: Session = Depends(get_db)):
+def trigger_reset(request: Request, db: Session = Depends(get_sync_db)):
     """🔄 FABRİKA AYARLARINA DÖN (RESET)"""
     msg = reset_database(db)
     return {"message": msg, "status": "RESET"}
 
 @router.get("/stats", response_model=SimulationStats)
-def get_simulation_stats(db: Session = Depends(get_db)):
+def get_simulation_stats(db: Session = Depends(get_sync_db)):
     # 1. Toplam Ciro
     total_revenue = db.query(func.sum(Sale.total_price)).scalar() or 0.0
     
@@ -62,7 +62,7 @@ def get_simulation_stats(db: Session = Depends(get_db)):
     }
 
 @router.post("/custom")
-def run_custom_simulation(scenario_req: CustomScenarioRequest, request: Request, db: Session = Depends(get_db)):
+def run_custom_simulation(scenario_req: CustomScenarioRequest, request: Request, db: Session = Depends(get_sync_db)):
     """
     🧪 ÖZEL SENARYO SİMÜLASYONU (What-If)
     """
@@ -70,5 +70,5 @@ def run_custom_simulation(scenario_req: CustomScenarioRequest, request: Request,
     return result
 
 @router.post("/what-if")
-def trigger_what_if(request: WhatIfRequest, db: Session = Depends(get_db)):
+def trigger_what_if(request: WhatIfRequest, db: Session = Depends(get_sync_db)):
     return simulate_what_if(db, request.source_store_id, request.target_store_id, request.product_id, request.amount)
