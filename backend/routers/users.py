@@ -7,6 +7,8 @@ from database import get_db
 from models import User
 from schemas import UserSchema, UserProfileUpdateSchema
 from core.logger import logger
+from fastapi import BackgroundTasks
+from core.email import send_welcome_email
 
 router = APIRouter(
     prefix="/api/users",
@@ -14,7 +16,7 @@ router = APIRouter(
 )
 
 @router.get("/{username}", response_model=UserSchema)
-async def get_user_profile(username: str, db: AsyncSession = Depends(get_db)):
+async def get_user_profile(username: str, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
     """
     👤 KULLANICI PROFİLİ GETİR
     """
@@ -35,6 +37,10 @@ async def get_user_profile(username: str, db: AsyncSession = Depends(get_db)):
         db.add(user)
         await db.commit()
         await db.refresh(user)
+
+        # Send Automatic Welcome Email (Background Task)
+        background_tasks.add_task(send_welcome_email, user.email, user.first_name)
+        logger.info(f"Queued welcome email for {user.email}")
         
     return user
 

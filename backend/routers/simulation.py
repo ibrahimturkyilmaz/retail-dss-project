@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
-from schemas import SimulationStats, CustomScenarioRequest, WhatIfRequest
+from schemas import SimulationStats, CustomScenarioRequest, WhatIfRequest, NearbyStoreRequest
 from database import get_sync_db
 from models import Sale, Inventory, Store
 from sqlalchemy import func
