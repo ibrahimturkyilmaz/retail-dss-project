@@ -10,7 +10,7 @@ export function useGeofencing(stores) {
     const [isSimulated, setIsSimulated] = useState(false);
 
     // Simulation Functions
-    const simulateEnterRegion = (storeId) => {
+    const simulateEnterRegion = async (storeId) => {
         if (!locationEnabled) {
             setNotification({
                 title: "⚠️ Uyarı",
@@ -23,18 +23,51 @@ export function useGeofencing(stores) {
         const store = stores.find(s => s.id === storeId);
         if (!store) return;
 
-        setNotification({
-            title: "📍 150m Yakınlardasınız!",
-            message: "Sepetinizde unuttuğunuz 'Vintage Ceket' Nişantaşı mağazamızda stokta! Denemek için harika bir zaman.",
-            action: { label: "Mağazayı Gör", onClick: () => console.log("Navigating to store...") }
-        });
+        // Backend Call to Simulate & Trigger Email
+        try {
+            const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+            const customerId = user?.id || 32; // Fallback for dev
+
+            // Simulate being AT the store by sending store's coordinates
+            const response = await fetch(`${API_URL}/api/marketing/check-proximity`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    lat: store.lat || 41.0082, // Default coords if missing
+                    lon: store.lng || 28.9784,
+                    customer_id: customerId
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.notification) {
+                    setNotification({
+                        storeId: data.store,
+                        title: `🔔 Simülasyon: ${data.title}`,
+                        message: data.message,
+                        action: { label: "Kuponu Gör", onClick: () => alert(`Kupon Kodu: ${data.coupon_code}`) }
+                    });
+                }
+            } else {
+                // Fallback if backend fails/blocked
+                setNotification({
+                    title: "📍 150m Yakınlardasınız! (Offline)",
+                    message: "Sepetinizde unuttuğunuz 'Vintage Ceket' mağazamızda stokta!",
+                    action: { label: "Mağazayı Gör", onClick: () => console.log("Navigating...") }
+                });
+            }
+        } catch (error) {
+            console.error("Simulation Error:", error);
+        }
     };
 
     const simulateInStore = () => {
+        // Beacon simulation logic remains similar or can also call backend
         if (!locationEnabled) {
             setNotification({
                 title: "⚠️ Uyarı",
-                message: "Kullanıcının konumu kapalı, bildirim gönderilemiyor.",
+                message: "Kullanıcının konumu kapalı.",
                 action: null
             });
             return;
@@ -42,7 +75,7 @@ export function useGeofencing(stores) {
         setIsSimulated(true);
         setNotification({
             title: "🤭 Duyduk ki Mağazamızdaymışsın!",
-            message: "Beğendiğin ürünü şimdi uygulama üzerinden al, kasada sıra bekleme ve anında %10 indirim + 2X Puan kazan!",
+            message: "Beğendiğin ürünü şimdi uygulama üzerinden al, kasada sıra bekleme!",
             action: null
         });
     };

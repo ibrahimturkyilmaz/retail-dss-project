@@ -49,6 +49,41 @@ async def create_customer(customer: CustomerCreate, db: AsyncSession = Depends(g
     await db.refresh(new_customer)
     return new_customer
 
+@router.post("/mobile-login", response_model=CustomerResponse)
+async def mobile_login(data: dict, db: AsyncSession = Depends(get_db)):
+    """
+    Mobile for Mobile App: Login or Register with Email.
+    Returns existing customer if email exists, else creates new one.
+    """
+    email = data.get("email")
+    name = data.get("name", "Mobil Kullanıcı")
+    
+    if not email:
+        raise HTTPException(status_code=400, detail="Email is required")
+        
+    # Check if customer exists by email
+    result = await db.execute(select(Customer).where(Customer.email == email))
+    existing_customer = result.scalar_one_or_none()
+    
+    if existing_customer:
+        return existing_customer
+        
+    # If not exists, create new
+    # Generate a dummy phone if needed or make it nullable in DB (it is nullable in model)
+    new_customer = Customer(
+        name=name,
+        email=email,
+        phone=None, # Opsiyonel
+        city="Mobil",
+        points_balance=0,
+        total_shopping_count=0
+    )
+    
+    db.add(new_customer)
+    await db.commit()
+    await db.refresh(new_customer)
+    return new_customer
+
 @router.get("/search", response_model=List[CustomerResponse])
 async def search_customers(q: str, db: AsyncSession = Depends(get_db)):
     """
@@ -60,3 +95,19 @@ async def search_customers(q: str, db: AsyncSession = Depends(get_db)):
     result = await db.execute(query)
     customers = result.scalars().all()
     return customers
+
+class UpdatePreferences(BaseModel):
+    interested_in_marketing: bool
+
+@router.put("/{customer_id}/preferences")
+async def update_preferences(customer_id: int, prefs: UpdatePreferences, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Customer).filter(Customer.id == customer_id))
+    customer = result.scalars().first()
+    
+    if not customer:
+        raise HTTPException(status_code=404, detail="Müşteri bulunamadı")
+        
+    customer.interested_in_marketing = prefs.interested_in_marketing
+    await db.commit()
+    
+    return {"status": "success", "interested_in_marketing": customer.interested_in_marketing}

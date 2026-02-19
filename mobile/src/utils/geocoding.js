@@ -12,18 +12,24 @@ export async function fetchAddressFromCoords(lat, lng) {
 
         const data = await response.json();
 
-        // Extract relevant parts (District / City)
-        // Nominatim returns variable fields (city, town, village, county, state)
+        // Extract relevant parts (City / District / Neighborhood)
         const address = data.address;
 
-        const district = address.suburb || address.neighbourhood || address.district || address.county || '';
-        const city = address.city || address.town || address.province || address.state || '';
+        const city = address.province || address.city || address.state || '';
+        const district = address.town || address.district || address.county || '';
+        const neighborhood = address.suburb || address.neighbourhood || address.quarter || '';
+
+        // Format: City / District / Neighborhood
+        // Filter out empty parts and join with " / "
+        const parts = [city, district, neighborhood].filter(Boolean);
+        const formattedShort = parts.length > 0 ? parts.join(' / ') : 'Bilinmeyen Konum';
 
         return {
             full: data.display_name,
-            short: district && city ? `${district}, ${city}` : (city || district || 'Bilinmeyen Konum'),
+            short: formattedShort,
+            city,
             district,
-            city
+            neighborhood
         };
     } catch (error) {
         console.error("Geocoding Error:", error);

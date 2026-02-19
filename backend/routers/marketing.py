@@ -64,14 +64,14 @@ async def check_proximity(data: LocationCheck, background_tasks: BackgroundTasks
     coupon = await create_coupon(db, data.customer_id, nearest_store.id)
     
     # 6. Send Email (Background Task)
-    # Query email async
-    res_email = await db.execute(select(Customer.email).filter(Customer.id == data.customer_id))
-    customer_email = res_email.scalar()
+    # Query email and permission async
+    res_customer = await db.execute(select(Customer).filter(Customer.id == data.customer_id))
+    customer = res_customer.scalars().first()
     
-    if customer_email:
+    if customer and customer.email and customer.interested_in_marketing:
         background_tasks.add_task(
             send_marketing_email, 
-            customer_email, 
+            customer.email, 
             content["title"], 
             {**context, "message": content["message"]}, 
             coupon.code

@@ -10,20 +10,68 @@ export function LocationProvider({ children }) {
     const [permissionStatus, setPermissionStatus] = useState('prompt'); // granted, denied, prompt
     const [isLoading, setIsLoading] = useState(false);
 
-    // İlk Yükleme - Kayıtlı durumu kontrol et veya varsayılan olarak izin iste
-    // İlk Yükleme - Kayıtlı durumu kontrol et veya varsayılan olarak izin iste
+    // 1. Uygulama açılışında kontrol: Daha önce izin verilmiş mi?
     useEffect(() => {
-        // Basit kontrol: Eğer konum daha önce açıldıysa, tekrar etkinleştirmeyi dene
+        const checkPermission = async () => {
+            // Önce LocalStorage'a bak: Kullanıcı daha önce "Evet" demiş mi?
+            const savedPreference = localStorage.getItem('retail-app-location-allowed');
+
+            if (savedPreference === 'true') {
+                // Tarayıcı seviyesinde izin durumunu kontrol et
+                if (navigator.permissions && navigator.permissions.query) {
+                    try {
+                        const result = await navigator.permissions.query({ name: 'geolocation' });
+                        if (result.state === 'granted') {
+                            // İzin zaten varsa direkt başlat
+                            setLocationEnabled(true);
+                            setPermissionStatus('granted');
+                        } else if (result.state === 'prompt') {
+                            // Henüz sorulmamış ama biz "hatırla" demişiz -> Otomatik iste
+                            requestPermission();
+                        }
+                    } catch (error) {
+                        console.warn("Permission query failed", error);
+                    }
+                } else {
+                    // Eski tarayıcılar için direkt dene
+                    setLocationEnabled(true);
+                }
+            }
+        };
+
+        checkPermission();
+    }, []);
+
+    // 2. Konum izni açıldığında çalışacak watcher
+    useEffect(() => {
+        let watchId;
+
         if (locationEnabled) {
             setIsLoading(true);
-            const watchId = navigator.geolocation.watchPosition(
+
+            if (!navigator.geolocation) {
+                alert("Tarayıcınız konum servisini desteklemiyor.");
+                setIsLoading(false);
+                return;
+            }
+
+            watchId = navigator.geolocation.watchPosition(
                 async (position) => {
                     const { latitude, longitude } = position.coords;
-                    setLocation({ lat: latitude, lng: longitude });
+
+                    // Gereksiz render'ı önlemek için sadece değişim varsa güncelle (basit bir threshold ile)
+                    setLocation(prev => {
+                        if (prev && prev.lat === latitude && prev.lng === longitude) return prev;
+                        return { lat: latitude, lng: longitude };
+                    });
+
                     setIsLoading(false);
                     setPermissionStatus('granted');
 
-                    // Adres verisini (Geocoding) çekme mantığı
+                    // Başarılı olduğunda tercihi kaydet
+                    localStorage.setItem('retail-app-location-allowed', 'true');
+
+                    // Adres verisini (Geocoding) çekme
                     try {
                         const addr = await fetchAddressFromCoords(latitude, longitude);
                         if (addr) setAddress(addr.short);
@@ -34,20 +82,25 @@ export function LocationProvider({ children }) {
                 (error) => {
                     console.error("Location Error:", error);
                     setIsLoading(false);
-                    // Zaman aşımında otomatik kapatma, sadece reddedilirse (deny) kapat
-                    if (error.code === 1) {
+
+                    if (error.code === 1) { // PERMISSION_DENIED
                         setLocationEnabled(false);
                         setPermissionStatus('denied');
+                        localStorage.setItem('retail-app-location-allowed', 'false'); // Reddedildiyse tercihi güncelle
                     }
                 },
                 { enableHighAccuracy: true, timeout: 20000, maximumAge: 5000 }
             );
-            return () => navigator.geolocation.clearWatch(watchId);
         } else {
+            // Kapatıldıysa state'i temizle
             setLocation(null);
             setAddress(null);
             setIsLoading(false);
         }
+
+        return () => {
+            if (watchId) navigator.geolocation.clearWatch(watchId);
+        };
     }, [locationEnabled]);
 
     const requestPermission = () => {
@@ -55,42 +108,38 @@ export function LocationProvider({ children }) {
             alert("Cihazınız konum servisini desteklemiyor.");
             return;
         }
+
         setIsLoading(true);
+        const options = { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 };
 
-        const options = { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 };
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                setLocation({ lat: latitude, lng: longitude });
+                setLocationEnabled(true);
+                setPermissionStatus('granted');
+                localStorage.setItem('retail-app-location-allowed', 'true'); // İzin verildi olarak kaydet
+                setIsLoading(false);
+            },
+            (error) => {
+                console.warn("Initial location request failed:", error);
 
-        // Helper specifically for the initial request
-        const attemptLocation = (opts, isRetry = false) => {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const { latitude, longitude } = position.coords;
-                    setLocation({ lat: latitude, lng: longitude }); // Set immediately
-                    setLocationEnabled(true);
-                    setPermissionStatus('granted');
-                    setIsLoading(false);
-                },
-                (error) => {
-                    if (!isRetry && (error.code === 3 || error.code === 2)) {
-                        // Retry with low accuracy if timeout or position unavailable
-                        console.warn("High accuracy failed, retrying with low accuracy...");
-                        attemptLocation({ enableHighAccuracy: false, timeout: 30000, maximumAge: 0 }, true);
-                    } else {
-                        setLocationEnabled(false);
-                        setPermissionStatus('denied');
-                        setIsLoading(false);
-                        if (error.code === 1) alert("Konum izni reddedildi. Lütfen tarayıcı ayarlarından izin verin.");
-                        else if (error.code === 2) alert("Konum alınamadı. GPS kapalı olabilir.");
-                        else if (error.code === 3) alert("Konum alma zaman aşımına uğradı. Lütfen açık bir alana geçin.");
-                    }
-                },
-                opts
-            );
-        };
+                // Hata olsa bile retry veya manuel işlem için state güncelle
+                if (error.code === 1) { // Kullanıcı reddetti
+                    setPermissionStatus('denied');
+                    localStorage.setItem('retail-app-location-allowed', 'false');
+                }
 
-        attemptLocation(options);
+                setLocationEnabled(false);
+                setIsLoading(false);
+
+                // Sadece kullanıcı butona bastıysa uyarı göster (otomatik kontrol değilse)
+                // Bu örnekte requestPermission genelde kullanıcı tetiklemesi ile çağrılır
+                if (error.code === 1) alert("Konum izni reddedildi. Lütfen tarayıcı ayarlarından izin verin.");
+            },
+            options
+        );
     };
-
-
 
     return (
         <LocationContext.Provider value={{

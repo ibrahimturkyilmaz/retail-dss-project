@@ -71,6 +71,7 @@ function MainLayout() {
             onSimulateEnter={() => simulateEnterRegion('store_001')}
             onSimulateInStore={simulateInStore}
             onNavigateToShop={() => setActiveTab('shop')}
+            onNavigateToProfile={() => setActiveTab('profile')}
           />
         );
       case 'shop':

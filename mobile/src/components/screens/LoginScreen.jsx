@@ -16,18 +16,34 @@ export default function LoginScreen({ onLogin }) {
         e.preventDefault();
         setIsLoading(true);
 
-        // Simulate Network Delay
-        setTimeout(() => {
-            // Mock Login Success
-            // You can add simple validation here if you want (e.g. email === 'demo@...')
-            const mockUser = {
-                id: 1,
-                name: 'Demo Kullanıcı',
-                email: email
-            };
-            onLogin(mockUser);
+        try {
+            // Backend API Call
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+            const response = await fetch(`${API_URL}/api/customers/mobile-login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: email,
+                    name: email.split('@')[0] // Varsayılan isim
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Giriş başarısız');
+            }
+
+            const userData = await response.json();
+
+            // Context'e kaydet
+            onLogin(userData);
+        } catch (error) {
+            console.error("Login Error:", error);
+            alert("Giriş yapılırken bir hata oluştu. Lütfen bağlantınızı kontrol edin.");
+        } finally {
             setIsLoading(false);
-        }, 1500);
+        }
     };
 
     return (

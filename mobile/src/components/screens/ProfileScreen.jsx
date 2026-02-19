@@ -1,13 +1,24 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { User, Settings, CreditCard, Bell, LogOut, ChevronRight, Package, MapPin, Heart, Shield } from 'lucide-react';
+import { User, Settings, CreditCard, Bell, LogOut, ChevronRight, Package, MapPin, Heart, Shield, Navigation, ToggleLeft, ToggleRight, Mail } from 'lucide-react';
 import { useUser } from '../../context/UserContext';
+import { useLocation } from '../../context/LocationContext';
 import { clsx } from 'clsx';
 
 export default function ProfileScreen({ notificationsEnabled, setNotificationsEnabled }) {
     const { user, logout } = useUser();
+    const { locationEnabled, setLocationEnabled, requestPermission, address } = useLocation();
 
     if (!user) return null;
+
+    const handleLocationToggle = () => {
+        if (locationEnabled) {
+            setLocationEnabled(false);
+            localStorage.setItem('retail-app-location-allowed', 'false');
+        } else {
+            requestPermission();
+        }
+    };
 
     const menuItems = [
         { icon: <Package size={20} />, label: 'Siparişlerim', value: '12 Aktif' },
@@ -17,9 +28,26 @@ export default function ProfileScreen({ notificationsEnabled, setNotificationsEn
     ];
 
     const settingsItems = [
-        { icon: <Bell size={20} />, label: 'Bildirimler', type: 'toggle', state: notificationsEnabled, toggle: () => setNotificationsEnabled(!notificationsEnabled) },
-        { icon: <Shield size={20} />, label: 'Gizlilik ve Güvenlik', type: 'link' },
-        { icon: <Settings size={20} />, label: 'Uygulama Ayarları', type: 'link' },
+        {
+            icon: <Navigation size={20} />,
+            label: 'Konum Servisi',
+            type: 'toggle',
+            state: locationEnabled,
+            toggle: handleLocationToggle,
+            color: 'text-blue-600',
+            bg: 'bg-blue-50'
+        },
+        {
+            icon: <Bell size={20} />,
+            label: 'Bildirimler',
+            type: 'toggle',
+            state: notificationsEnabled,
+            toggle: () => setNotificationsEnabled(!notificationsEnabled),
+            color: 'text-purple-600',
+            bg: 'bg-purple-50'
+        },
+        { icon: <Shield size={20} />, label: 'Gizlilik ve Güvenlik', type: 'link', color: 'text-slate-600', bg: 'bg-slate-100' },
+        { icon: <Settings size={20} />, label: 'Uygulama Ayarları', type: 'link', color: 'text-slate-600', bg: 'bg-slate-100' },
     ];
 
     return (
@@ -32,7 +60,7 @@ export default function ProfileScreen({ notificationsEnabled, setNotificationsEn
 
             <div className="px-6 -mt-48 relative z-10">
                 {/* Profile Header */}
-                <div className="flex flex-col items-center mb-8">
+                <div className="flex flex-col items-center mb-6">
                     <div className="relative mb-4 group cursor-pointer">
                         <div className="w-28 h-28 rounded-full p-1 bg-gradient-to-tr from-indigo-500 to-teal-500 shadow-xl shadow-indigo-500/20">
                             <div className="w-full h-full bg-white rounded-full p-1">
@@ -51,21 +79,42 @@ export default function ProfileScreen({ notificationsEnabled, setNotificationsEn
                     <p className="text-indigo-200 font-medium">✨ Gold Üye</p>
                 </div>
 
+                {/* Live Location Display Card */}
+                {locationEnabled && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 mb-8 flex items-center gap-3 shadow-lg"
+                    >
+                        <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-300 animate-pulse">
+                            <Navigation size={20} fill="currentColor" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-indigo-200 text-xs font-bold uppercase tracking-wide mb-0.5">Mevcut Konum</p>
+                            <p className="text-white font-medium truncate text-sm">
+                                {address ? address.short : 'Konum alınıyor...'}
+                            </p>
+                        </div>
+                    </motion.div>
+                )}
+
                 {/* Stats Card */}
-                <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-3xl p-6 mb-8 shadow-xl grid grid-cols-3 gap-4 text-center">
-                    <div>
-                        <span className="block text-2xl font-bold text-white mb-1 font-heading">1500</span>
-                        <span className="text-xs text-indigo-100 uppercase tracking-widest font-semibold">Puan</span>
+                {!locationEnabled && (
+                    <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-3xl p-6 mb-8 shadow-xl grid grid-cols-3 gap-4 text-center">
+                        <div>
+                            <span className="block text-2xl font-bold text-white mb-1 font-heading">1500</span>
+                            <span className="text-xs text-indigo-100 uppercase tracking-widest font-semibold">Puan</span>
+                        </div>
+                        <div className="border-x border-white/10">
+                            <span className="block text-2xl font-bold text-white mb-1 font-heading">12</span>
+                            <span className="text-xs text-indigo-100 uppercase tracking-widest font-semibold">Sipariş</span>
+                        </div>
+                        <div>
+                            <span className="block text-2xl font-bold text-white mb-1 font-heading">4</span>
+                            <span className="text-xs text-indigo-100 uppercase tracking-widest font-semibold">Kupon</span>
+                        </div>
                     </div>
-                    <div className="border-x border-white/10">
-                        <span className="block text-2xl font-bold text-white mb-1 font-heading">12</span>
-                        <span className="text-xs text-indigo-100 uppercase tracking-widest font-semibold">Sipariş</span>
-                    </div>
-                    <div>
-                        <span className="block text-2xl font-bold text-white mb-1 font-heading">4</span>
-                        <span className="text-xs text-indigo-100 uppercase tracking-widest font-semibold">Kupon</span>
-                    </div>
-                </div>
+                )}
 
                 {/* Menu Grid */}
                 <h3 className="text-slate-900 font-bold mb-4 font-heading text-lg px-2">Hesabım</h3>
@@ -92,7 +141,7 @@ export default function ProfileScreen({ notificationsEnabled, setNotificationsEn
                     {settingsItems.map((item, index) => (
                         <div key={index} className="flex items-center justify-between p-4 hover:bg-slate-50 rounded-2xl transition-colors">
                             <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center">
+                                <div className={clsx("w-10 h-10 rounded-xl flex items-center justify-center", item.bg, item.color)}>
                                     {item.icon}
                                 </div>
                                 <span className="font-semibold text-slate-700 font-heading">{item.label}</span>

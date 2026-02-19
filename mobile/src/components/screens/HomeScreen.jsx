@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, ArrowRight, Home, Search, Play, Zap, Info, MapPin } from 'lucide-react';
+import { Bell, ArrowRight, Search, Play, Zap, Info, MapPin, Navigation } from 'lucide-react';
 import { HomeSkeleton } from '../common/Skeleton';
 import { clsx } from 'clsx';
+import { useLocation } from '../../context/LocationContext';
 
-export default function HomeScreen({ user, onSimulateEnter, onSimulateInStore, onNavigateToShop }) {
+export default function HomeScreen({ user, onSimulateEnter, onSimulateInStore, onNavigateToShop, onNavigateToProfile }) {
     const [isLoading, setIsLoading] = useState(true);
-    const [showDevTools, setShowDevTools] = useState(false);
+    const { locationEnabled, address } = useLocation();
 
     useEffect(() => {
         const timer = setTimeout(() => setIsLoading(false), 2000);
@@ -24,10 +25,10 @@ export default function HomeScreen({ user, onSimulateEnter, onSimulateInStore, o
     ];
 
     return (
-        <div className="p-6 pt-12 pb-24 space-y-8 bg-slate-50 min-h-screen">
+        <div className="p-6 pt-12 pb-32 space-y-8 bg-slate-50 min-h-screen">
             {/* Header */}
             <header className="flex justify-between items-start">
-                <div onClick={() => setShowDevTools(!showDevTools)}>
+                <div>
                     <p className="text-slate-500 text-sm font-medium mb-1">Tekrar hoş geldin,</p>
                     <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
                         {user.name}
@@ -39,22 +40,61 @@ export default function HomeScreen({ user, onSimulateEnter, onSimulateInStore, o
                 </div>
             </header>
 
+            {/* Location Permission Request Card */}
+            {!locationEnabled && (
+                <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-indigo-600 rounded-2xl p-4 shadow-lg shadow-indigo-200 text-white flex items-center justify-between cursor-pointer active:scale-95 transition-transform"
+                    onClick={onNavigateToProfile}
+                >
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                            <Navigation size={20} className="text-white" />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-sm">Konum İzni Gerekli</h3>
+                            <p className="text-xs text-indigo-100 opacity-90">Ayarlara gitmek için dokun</p>
+                        </div>
+                    </div>
+                </motion.div>
+            )}
+
+            {/* Live Location Display (If Enabled) */}
+            {locationEnabled && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="bg-white rounded-2xl p-3 shadow-sm border border-slate-100 flex items-center gap-3"
+                >
+                    <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
+                        <MapPin size={16} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wide">Mevcut Konum</p>
+                        <p className="text-slate-700 font-bold text-xs truncate">
+                            {address ? address.short : 'Konum aranıyor...'}
+                        </p>
+                    </div>
+                </motion.div>
+            )}
+
             {/* AI Insight Card - Premium Glass Effect */}
-            <div className="relative overflow-hidden rounded-[2rem] p-6 shadow-2xl transition-transform hover:scale-[1.02] duration-300">
+            <div className="relative overflow-hidden rounded-[2rem] p-6 shadow-xl transition-transform hover:scale-[1.02] duration-300 group">
                 {/* Dynamic Background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 transition-all group-hover:bg-indigo-700"></div>
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
                 <div className="absolute bottom-0 left-0 w-48 h-48 bg-orange-500/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
 
                 <div className="relative z-10 text-white">
                     <div className="flex items-center gap-2 mb-4">
-                        <div className="bg-white/20 backdrop-blur-md p-1.5 rounded-lg">
+                        <div className="bg-white/20 backdrop-blur-md p-1.5 rounded-lg border border-white/10">
                             <Zap size={14} className="text-yellow-300 fill-yellow-300" />
                         </div>
                         <span className="text-xs font-bold tracking-widest opacity-80 uppercase font-heading">AI Asistanı</span>
                     </div>
 
-                    <h3 className="text-2xl font-bold leading-snug mb-3">
+                    <h3 className="text-2xl font-bold leading-snug mb-3 font-heading">
                         Şampuan rezervin <br />
                         <span className="text-indigo-200">bitmek üzere!</span>
                     </h3>
@@ -165,33 +205,30 @@ export default function HomeScreen({ user, onSimulateEnter, onSimulateInStore, o
                 </div>
             </section>
 
-            {/* Hidden Dev Tools */}
-            <AnimatePresence>
-                {showDevTools && (
-                    <motion.section
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="mt-8 pt-6 border-t border-slate-200 overflow-hidden"
-                    >
-                        <div className="flex items-center gap-2 mb-4 text-slate-400">
+            {/* Developer / Simulation Tools - VISIBLE */}
+            <section className="mt-8 pt-6 border-t border-slate-200">
+                <div className="flex items-center gap-2 mb-4 text-slate-500">
+                    <MapPin size={16} />
+                    <h2 className="text-xs font-bold uppercase tracking-widest">Geliştirici / Simülasyon</h2>
+                </div>
+                <div className="grid grid-cols-2 gap-3 bg-slate-100 p-4 rounded-2xl border border-slate-200">
+                    <button onClick={onSimulateEnter} className="p-3 bg-white text-indigo-700 rounded-xl text-xs font-bold shadow-sm hover:shadow-md transition-all text-left flex items-center gap-2 group">
+                        <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition-colors">
                             <MapPin size={16} />
-                            <h2 className="text-xs font-bold uppercase tracking-widest">Geliştirici Paneli</h2>
                         </div>
-                        <div className="grid grid-cols-2 gap-3 bg-slate-100 p-4 rounded-2xl">
-                            <button onClick={onSimulateEnter} className="p-3 bg-white text-indigo-700 rounded-xl text-xs font-bold shadow-sm hover:shadow-md transition-all text-left">
-                                📍 Mağaza Yakını<br />(Geofence)
-                            </button>
-                            <button onClick={onSimulateInStore} className="p-3 bg-white text-emerald-700 rounded-xl text-xs font-bold shadow-sm hover:shadow-md transition-all text-left">
-                                🏪 Mağaza İçi<br />(Beacon)
-                            </button>
+                        <span>Mağaza Yakını<br />(Geofence)</span>
+                    </button>
+                    <button onClick={onSimulateInStore} className="p-3 bg-white text-emerald-700 rounded-xl text-xs font-bold shadow-sm hover:shadow-md transition-all text-left flex items-center gap-2 group">
+                        <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
+                            <Zap size={16} />
                         </div>
-                        <p className="text-[10px] text-slate-400 mt-2 text-center">
-                            Proximity Service: Active • {import.meta.env.VITE_API_URL}
-                        </p>
-                    </motion.section>
-                )}
-            </AnimatePresence>
+                        <span>Mağaza İçi<br />(Beacon)</span>
+                    </button>
+                </div>
+                <p className="text-[10px] text-slate-400 mt-2 text-center font-mono">
+                    Proximity Service • {import.meta.env.VITE_API_URL}
+                </p>
+            </section>
         </div>
     );
 }
