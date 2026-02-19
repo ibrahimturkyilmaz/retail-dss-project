@@ -1,12 +1,50 @@
 @import "tailwindcss";
 
 @layer base {
+  :root {
+    --font-heading: 'Outfit', sans-serif;
+    --font-body: 'Plus Jakarta Sans', sans-serif;
+  }
+
   body {
-    @apply antialiased text-gray-900 bg-gray-50;
+    @apply antialiased text-slate-900 bg-slate-50;
+    font-family: var(--font-body);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading);
   }
 
   img,
   video {
     @apply max-w-full h-auto;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-indigo-600 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:shadow-indigo-300 transition-all active:scale-95;
+  }
+
+  .card {
+    @apply bg-white rounded-3xl border border-slate-100 shadow-[0_8px_30px_rgba(0, 0, 0, 0.04)] hover:shadow-[0_8px_30px_rgba(0, 0, 0, 0.08)] transition-all duration-300;
+  }
+
+  .glass {
+    @apply bg-white/80 backdrop-blur-md border border-white/20;
+  }
+
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 }
