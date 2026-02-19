@@ -113,6 +113,8 @@ def send_welcome_email(to_email: str, first_name: str):
         server.quit()
         logger.info(f"Welcome email sent to {to_email}")
     except Exception as e:
+        logger.error(f"Failed to send welcome email to {to_email}: {e}")
+
 def send_welcome_email_customer(to_email: str, name: str):
     """
     Sends a welcome email to the new mobile customer.
