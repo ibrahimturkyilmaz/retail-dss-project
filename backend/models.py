@@ -85,7 +85,8 @@ class Coupon(Base):
     
     is_used = Column(Boolean, default=False)
     valid_until = Column(DateTime)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc), onupdate=lambda: datetime.datetime.now(datetime.timezone.utc))
 
     # Relations
     customer = relationship("Customer")
@@ -208,7 +209,8 @@ class TransferRejection(Base):
     target_store_id = Column(Integer, ForeignKey("stores.id"))
     product_id = Column(Integer, ForeignKey("products.id"))
     reason = Column(String) # COST, OPS, STRATEGY
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc), onupdate=lambda: datetime.datetime.now(datetime.timezone.utc))
 
 class RoutePenalty(Base):
     __tablename__ = "route_penalties"
@@ -238,7 +240,8 @@ class PosSale(Base):
     
     status = Column(String, default="PENDING") # PENDING, PROCESSED, ERROR
     error_log = Column(String, nullable=True)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc), onupdate=lambda: datetime.datetime.now(datetime.timezone.utc))
 
     # İlişkiler
     items = relationship("PosSaleItem", back_populates="sale", cascade="all, delete-orphan")
@@ -293,4 +296,5 @@ class PosZReport(Base):
     total_cash = Column(Float)
     total_credit = Column(Float)
     
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc), onupdate=lambda: datetime.datetime.now(datetime.timezone.utc))
