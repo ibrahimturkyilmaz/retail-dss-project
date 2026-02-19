@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    @apply antialiased text-gray-900 bg-gray-50;
+  }
+
+  img,
+  video {
+    @apply max-w-full h-auto;
+  }
+}
