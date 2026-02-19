@@ -72,3 +72,47 @@ def run_custom_simulation(scenario_req: CustomScenarioRequest, request: Request,
 @router.post("/what-if")
 def trigger_what_if(request: WhatIfRequest, db: Session = Depends(get_sync_db)):
     return simulate_what_if(db, request.source_store_id, request.target_store_id, request.product_id, request.amount)
+
+@router.post("/find-nearby-store")
+def find_nearby_store(req: "NearbyStoreRequest", db: Session = Depends(get_sync_db)):
+    """
+    📍 En yakın mağazayı bul (Haversine Formülü)
+    """
+    import math
+
+    stores = db.query(Store).all()
+    if not stores:
+        return {"error": "Mağaza bulunamadı"}
+
+    closest_store = None
+    min_dist = float("inf")
+
+    # Haversine
+    R = 6371  # km
+    
+    for store in stores:
+        try:
+            dlat = math.radians(store.lat - req.lat)
+            dlon = math.radians(store.lon - req.lon)
+            a = math.sin(dlat/2) * math.sin(dlat/2) + \
+                math.cos(math.radians(req.lat)) * math.cos(math.radians(store.lat)) * \
+                math.sin(dlon/2) * math.sin(dlon/2)
+            c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+            dist = R * c
+            
+            if dist < min_dist:
+                min_dist = dist
+                closest_store = store
+        except:
+            continue
+            
+    if closest_store:
+        return {
+            "store_id": closest_store.id,
+            "name": closest_store.name,
+            "distance_km": round(min_dist, 2),
+            "lat": closest_store.lat,
+            "lon": closest_store.lon
+        }
+    
+    return {"error": "Hesaplama hatası"}

@@ -113,6 +113,10 @@ class CustomScenarioRequest(BaseModel):
     price_change: int
     delay_days: int
 
+class NearbyStoreRequest(BaseModel):
+    lat: float
+    lon: float
+
 class WhatIfRequest(BaseModel):
     source_store_id: int
     target_store_id: int

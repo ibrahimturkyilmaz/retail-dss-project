@@ -9,7 +9,8 @@ import {
     AdjustmentsHorizontalIcon,
     ChartBarIcon,
     VariableIcon,
-    SparklesIcon
+    SparklesIcon,
+    MapPinIcon
 } from '@heroicons/react/24/outline';
 import {
     LineChart,
@@ -285,6 +286,35 @@ const Simulations = () => {
                                         />
                                     </div>
                                     <p className="text-[10px] text-slate-400 italic mt-2">Not: Özel ayarlar anlık etki analizi içindir.</p>
+
+                                    <div className="pt-4 border-t border-slate-100">
+                                        <button
+                                            onClick={() => {
+                                                if (!navigator.geolocation) return alert("Konum servisi desteklenmiyor.");
+
+                                                navigator.geolocation.getCurrentPosition(async (pos) => {
+                                                    try {
+                                                        const { latitude, longitude } = pos.coords;
+                                                        const res = await axiosClient.post('/api/simulate/find-nearby-store', { lat: latitude, lon: longitude });
+                                                        if (res.data.error) {
+                                                            alert(res.data.error);
+                                                        } else {
+                                                            alert(`📍 En yakın mağaza: ${res.data.name}\n🏁 Mesafe: ${res.data.distance_km} km`);
+                                                        }
+                                                    } catch (err) {
+                                                        console.error(err);
+                                                        alert("Mağaza bulunurken hata oluştu.");
+                                                    }
+                                                }, (err) => {
+                                                    alert("Konum izni verilmedi.");
+                                                });
+                                            }}
+                                            className="w-full py-3 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-2 border border-blue-200"
+                                        >
+                                            <MapPinIcon className="w-4 h-4" />
+                                            En Yakın Mağazayı Bul
+                                        </button>
+                                    </div>
                                 </div>
                             )}
 
