@@ -93,6 +93,13 @@ class UserProfileUpdateSchema(BaseModel):
     calendar_url: Optional[str] = None
     password: Optional[str] = None 
 
+class UserSyncSchema(BaseModel):
+    email: str
+    first_name: str
+    last_name: str
+    username: Optional[str] = None
+    role: str = "user" 
+
 # --- Inventory Schemas ---
 class InventorySchema(BaseModel):
     product_id: int

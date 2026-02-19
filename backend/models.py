@@ -248,6 +248,10 @@ class PosSale(Base):
     loyalty_points_earned = Column(Float, default=0.0)
     loyalty_points_used = Column(Float, default=0.0)
 
+    # Link to Customer (Field Operations / Mobile App Sale)
+    customer_id = Column(Integer, ForeignKey("customers.id"), nullable=True)
+    customer = relationship("Customer")
+
     __table_args__ = (
         UniqueConstraint('pos_device_id', 'receipt_no', name='uix_pos_receipt'),
     )

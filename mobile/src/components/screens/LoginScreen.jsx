@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ShoppingBag, ArrowRight, Mail, User } from 'lucide-react';
 import { useUser } from '../../context/UserContext';
+import { supabase } from '../../lib/supabase';
 
 export default function LoginScreen({ onLogin }) {
     const { signInWithGoogle, login } = useUser();
@@ -11,6 +12,44 @@ export default function LoginScreen({ onLogin }) {
     const [isLoading, setIsLoading] = useState(false);
 
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+    // Listen for Supabase auth changes (specifically for OAuth redirect)
+    useEffect(() => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN' && session) {
+                console.log("LoginScreen: User signed in via OAuth", session.user);
+
+                // Sync with Backend (Trigger Welcome Email)
+                const userData = {
+                    email: session.user.email,
+                    first_name: session.user.user_metadata?.full_name?.split(' ')[0] || session.user.email?.split('@')[0],
+                    last_name: session.user.user_metadata?.full_name?.split(' ')[1] || '',
+                    username: session.user.email?.split('@')[0]
+                };
+
+                // Non-blocking sync call
+                fetch(`${API_URL}/api/users/sync`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(userData)
+                }).then(res => {
+                    if (res.ok) console.log("Backend Sync Success");
+                    else console.error("Backend Sync Failed");
+                }).catch(err => console.error("Backend Sync Error:", err));
+
+                // Construct local user data
+                const appUserData = {
+                    ...userData,
+                    name: userData.first_name,
+                    surname: userData.last_name,
+                    is_new_user: false
+                };
+                onLogin(appUserData);
+            }
+        });
+
+        return () => subscription.unsubscribe();
+    }, [onLogin]);
 
     const handleEmailLogin = async (e) => {
         e.preventDefault();
