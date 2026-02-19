@@ -5,6 +5,7 @@ from database import get_db
 from models import Customer
 from pydantic import BaseModel
 from typing import Optional, List
+from core.logger import logger
 
 router = APIRouter(
     prefix="/api/customers",
