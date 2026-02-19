@@ -45,17 +45,24 @@ export default function HomeScreen({ user, onSimulateEnter, onSimulateInStore, o
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-indigo-600 rounded-2xl p-4 shadow-lg shadow-indigo-200 text-white flex items-center justify-between cursor-pointer active:scale-95 transition-transform"
+                    className="bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-700 rounded-[1.5rem] p-5 shadow-xl shadow-indigo-200/50 text-white cursor-pointer active:scale-[0.98] transition-transform"
                     onClick={onNavigateToProfile}
                 >
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                            <Navigation size={20} className="text-white" />
+                    <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm shrink-0 border border-white/10">
+                            <Navigation size={22} className="text-white" />
                         </div>
-                        <div>
-                            <h3 className="font-bold text-sm">Konum İzni Gerekli</h3>
-                            <p className="text-xs text-indigo-100 opacity-90">Ayarlara gitmek için dokun</p>
+                        <div className="flex-1">
+                            <h3 className="font-bold text-base mb-1">📍 Konumunuzu Açın</h3>
+                            <p className="text-xs text-indigo-100 leading-relaxed opacity-90">
+                                Yakınındaki mağazaları gör, özel kampanyalardan haberdar ol ve mağaza içi tekliflerden yararlan!
+                            </p>
                         </div>
+                    </div>
+                    <div className="flex gap-2 mt-4">
+                        <div className="bg-white/15 backdrop-blur-sm rounded-xl px-3 py-1.5 text-[10px] font-bold border border-white/10">🏪 Yakın Mağaza</div>
+                        <div className="bg-white/15 backdrop-blur-sm rounded-xl px-3 py-1.5 text-[10px] font-bold border border-white/10">🎯 Özel Kampanya</div>
+                        <div className="bg-white/15 backdrop-blur-sm rounded-xl px-3 py-1.5 text-[10px] font-bold border border-white/10">🔔 Bildirim</div>
                     </div>
                 </motion.div>
             )}
@@ -65,16 +72,23 @@ export default function HomeScreen({ user, onSimulateEnter, onSimulateInStore, o
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="bg-white rounded-2xl p-3 shadow-sm border border-slate-100 flex items-center gap-3"
+                    className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center gap-3"
                 >
-                    <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
-                        <MapPin size={16} />
+                    <div className="relative">
+                        <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
+                            <MapPin size={18} />
+                        </div>
+                        <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white animate-pulse" />
                     </div>
                     <div className="flex-1 min-w-0">
-                        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wide">Mevcut Konum</p>
-                        <p className="text-slate-700 font-bold text-xs truncate">
-                            {address ? address.short : 'Konum aranıyor...'}
+                        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wide">Canlı Konum</p>
+                        <p className="text-slate-700 font-bold text-sm truncate">
+                            {address ? address.short : 'Konum alınıyor...'}
                         </p>
+                    </div>
+                    <div className="text-right shrink-0">
+                        <p className="text-[10px] text-slate-400 font-semibold">En Yakın Mağaza</p>
+                        <p className="text-xs text-indigo-600 font-bold">0.8 km</p>
                     </div>
                 </motion.div>
             )}
