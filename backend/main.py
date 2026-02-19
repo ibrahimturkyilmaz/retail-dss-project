@@ -24,7 +24,8 @@ from routers import (
     transfers,
     pos,
     customers, # Phase 8
-    marketing # Phase 2 (New)
+    marketing, # Phase 2 (New)
+    utils # Proxy & Helpers
 )
 
 
@@ -107,6 +108,7 @@ app.include_router(transfers.router)
 app.include_router(pos.router)
 app.include_router(customers.router) # Phase 8
 app.include_router(marketing.router) # Phase 2 (New)
+app.include_router(utils.router) # Proxy & Helpers
 
 @app.get("/")
 async def read_root(): 

@@ -10,22 +10,57 @@ export function UserProvider({ children }) {
 
     useEffect(() => {
         // Mevcut oturumu kontrol et
-        supabase.auth.getSession().then(({ data: { session } }) => {
+        const initSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
             setSession(session);
-            setUser(session?.user ?? null);
-            setLoading(false);
-        });
+            if (session?.user?.email) {
+                await fetchBackendCustomer(session.user);
+            } else {
+                setLoading(false);
+            }
+        };
+        initSession();
 
         // Oturum değişikliklerini dinle
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
             console.log("Auth State Changed:", _event, session);
             setSession(session);
-            setUser(session?.user ?? null);
-            setLoading(false);
+            if (session?.user?.email) {
+                await fetchBackendCustomer(session.user);
+            } else {
+                setUser(null);
+                setLoading(false);
+            }
         });
 
         return () => subscription.unsubscribe();
     }, []);
+
+    const fetchBackendCustomer = async (supabaseUser) => {
+        try {
+            const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+            const res = await fetch(`${API_URL}/api/customers/mobile-login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: supabaseUser.email,
+                    name: supabaseUser.user_metadata?.full_name || supabaseUser.email.split('@')[0],
+                    photo: supabaseUser.user_metadata?.avatar_url
+                })
+            });
+
+            if (res.ok) {
+                const customer = await res.json();
+                setUser(customer); // Backend customer with Integer ID
+            } else {
+                console.error("Failed to sync user with backend");
+            }
+        } catch (error) {
+            console.error("Error fetching customer:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const login = async (email, password) => {
         const { data, error } = await supabase.auth.signInWithPassword({

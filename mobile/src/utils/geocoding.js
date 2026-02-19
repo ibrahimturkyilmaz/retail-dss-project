@@ -1,10 +1,8 @@
 export async function fetchAddressFromCoords(lat, lng) {
     try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`, {
-            headers: {
-                'User-Agent': 'RetailAppDemo/1.0' // Nice to have for OSM
-            }
-        });
+        const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+        // Use Backend Proxy to avoid CORS
+        const response = await fetch(`${API_URL}/api/utils/proxy/reverse-geocode?lat=${lat}&lon=${lng}`);
 
         if (!response.ok) {
             throw new Error('Geocoding service unavailable');
