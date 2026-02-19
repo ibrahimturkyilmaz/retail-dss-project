@@ -25,7 +25,7 @@ def send_z_report_email(to_email: str, subject: str, body_html: str):
     try:
         message = MIMEMultipart("alternative")
         message["Subject"] = subject
-        message["From"] = sender_email
+        message["From"] = f"StyleStore <{sender_email}>"
         message["To"] = to_email
 
         # HTML Body
