@@ -52,7 +52,7 @@ class ProfileUpdate(BaseModel):
 async def create_customer(customer: CustomerCreate, db: AsyncSession = Depends(get_db)):
     # Check existing phone
     result = await db.execute(select(Customer).where(Customer.phone == customer.phone))
-    existing = result.scalar_one_or_none()
+    existing = result.scalars().first()
     
     if existing:
         raise HTTPException(status_code=400, detail="Bu telefon numarası ile kayıtlı müşteri var.")
@@ -94,7 +94,7 @@ async def mobile_login(data: dict, background_tasks: BackgroundTasks, db: AsyncS
         
     # Check if customer exists by email
     result = await db.execute(select(Customer).where(Customer.email == email))
-    existing_customer = result.scalar_one_or_none()
+    existing_customer = result.scalars().first()
     
     if existing_customer:
         # Update photo if provided (Google may have updated it)
