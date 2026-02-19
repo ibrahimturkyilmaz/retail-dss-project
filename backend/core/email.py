@@ -198,11 +198,14 @@ def send_welcome_email_customer(to_email: str, name: str):
     msg.attach(MIMEText(html_content, 'html', 'utf-8'))
 
     try:
+        logger.info(f"Attempting to send welcome email to {to_email} via {settings.MAIL_SERVER}:{settings.MAIL_PORT}")
         server = smtplib.SMTP(settings.MAIL_SERVER, settings.MAIL_PORT)
+        server.set_debuglevel(1)
         server.starttls()
         server.login(settings.MAIL_USERNAME, settings.MAIL_PASSWORD)
         server.send_message(msg)
         server.quit()
-        logger.info(f"Customer welcome email sent to {to_email}")
+        logger.info(f"✅ Customer welcome email sent to {to_email}")
     except Exception as e:
-        logger.error(f"Failed to send customer welcome email to {to_email}: {e}")
+        logger.error(f"❌ Failed to send customer welcome email to {to_email}: {e}")
+
