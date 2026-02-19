@@ -171,3 +171,45 @@ class AIChatRequest(BaseModel):
     message: str
     history: list = []
     voice_gender: str = "female"
+    
+# --- POS Schemas ---
+class PosSaleItemBase(BaseModel):
+    product_sku: str
+    quantity: int
+    unit_price: float
+    vat_rate: float = 18.0
+
+class PosPaymentBase(BaseModel):
+    payment_method: str
+    amount: float
+
+class PosSaleCreate(BaseModel):
+    pos_device_id: str
+    receipt_no: str
+    transaction_type: str = "SALE"
+    total_amount: float
+    currency: str = "TRY"
+    items: List[PosSaleItemBase]
+    payments: List[PosPaymentBase]
+    created_at: Optional[datetime.datetime] = None
+
+class PosSaleResponse(BaseModel):
+    id: int
+    pos_device_id: str
+    receipt_no: str
+    status: str
+    total_amount: float
+    created_at: datetime.datetime
+    
+    class Config:
+        from_attributes = True
+
+class PosZReportCreate(BaseModel):
+    pos_device_id: str
+    z_no: str
+    total_sales: float
+    total_returns: float
+    total_cash: float
+    total_credit: float
+    date: datetime.date
+

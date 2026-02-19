@@ -5,6 +5,9 @@ import { UIProvider } from './context/UIContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import DashboardLayout from './layouts/DashboardLayout';
 
+import { TimeProvider } from './context/TimeContext';
+import TimeTravelWidget from './components/widgets/TimeTravelWidget';
+
 // Lazy Load Pages for Performance
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Login = lazy(() => import('./pages/Login'));
@@ -15,6 +18,7 @@ const Analytics = lazy(() => import('./pages/Analytics'));
 const Settings = lazy(() => import('./pages/Settings'));
 const SqlPlayground = lazy(() => import('./components/SqlPlayground'));
 const VideoMeeting = lazy(() => import('./components/VideoMeeting'));
+const POS = lazy(() => import('./pages/POS'));
 
 // Loading Component
 const PageLoader = () => (
@@ -30,29 +34,33 @@ function App() {
   return (
     <AuthProvider>
       <UIProvider>
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path="/login" element={<Login />} />
+        <TimeProvider>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/login" element={<Login />} />
 
-            <Route path="/" element={
-              <ProtectedRoute>
-                <DashboardLayout />
-              </ProtectedRoute>
-            }>
-              <Route index element={<Dashboard />} />
-              <Route path="simulations" element={<Simulations />} />
-              <Route path="stores" element={<Stores />} />
-              <Route path="transfers" element={<Transfers />} />
-              <Route path="analytics" element={<Analytics />} />
-              <Route path="playground" element={<SqlPlayground />} />
-              <Route path="settings" element={<Settings />} />
-              <Route path="meeting" element={<VideoMeeting />} />
+              <Route path="/" element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }>
+                <Route index element={<Dashboard />} />
+                <Route path="simulations" element={<Simulations />} />
+                <Route path="stores" element={<Stores />} />
+                <Route path="transfers" element={<Transfers />} />
+                <Route path="analytics" element={<Analytics />} />
+                <Route path="playground" element={<SqlPlayground />} />
+                <Route path="settings" element={<Settings />} />
+                <Route path="meeting" element={<VideoMeeting />} />
+                <Route path="pos" element={<POS />} />
 
-              {/* 404 - Redirect to Dashboard */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Route>
-          </Routes>
-        </Suspense>
+                {/* 404 - Redirect to Dashboard */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Route>
+            </Routes>
+            <TimeTravelWidget />
+          </Suspense>
+        </TimeProvider>
       </UIProvider>
     </AuthProvider>
   );

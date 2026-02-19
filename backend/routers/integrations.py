@@ -70,41 +70,21 @@ async def get_weather(city: str = "Istanbul"):
     # Let's keep `def` for requests to avoid blocking event loop if we don't use aiohttp.
     pass
 
-# We will use `def` for external blocked calls to let FastAPI handle threading
 @router.get("/api/weather")
-def get_weather(city: str = "Istanbul"):
-    cache_key = city.lower().strip()
-    now = time_module.time()
-    if cache_key in _weather_cache:
-        cached = _weather_cache[cache_key]
-        if now - cached["timestamp"] < WEATHER_CACHE_TTL:
-            return cached["data"]
-            
-    api_key = settings.WEATHER_API_KEY
-    if not api_key:
-        raise HTTPException(status_code=500, detail="WEATHER_API_KEY eksik")
+def get_weather_endpoint(city: str = "Istanbul"):
+    # Use centralized service
+    from services.weather_service import get_current_weather
+    
+    # city can be city name or lat,lon
+    weather = get_current_weather(city)
+    
+    if not weather:
+        raise HTTPException(status_code=502, detail="Hava durumu servisi hatası")
         
-    try:
-        url = f"http://api.weatherapi.com/v1/forecast.json?key={api_key}&q={city}&days=3&lang=tr&aqi=no"
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        raw = response.json()
-        
-        current = raw.get("current", {})
-        location = raw.get("location", {})
-        forecast_days = raw.get("forecast", {}).get("forecastday", [])
-        
-        result = {
-            "location": { "name": location.get("name"), "localtime": location.get("localtime") },
-            "current": { "temp_c": current.get("temp_c"), "condition": current.get("condition",{}).get("text") },
-            "forecast": [{"date": d.get("date"), "max_temp": d.get("day",{}).get("maxtemp_c")} for d in forecast_days]
-        }
-        _weather_cache[cache_key] = {"data": result, "timestamp": now}
-        return result
-    except Exception as e:
-        if cache_key in _weather_cache: return _weather_cache[cache_key]["data"]
-        raise HTTPException(status_code=502, detail=str(e))
-
+    return {
+        "location": {"name": weather["location"]},
+        "current": {"temp_c": weather["temp_c"], "condition": weather["condition"]}
+    }
 @router.get("/api/ai/quick-stats")
 async def get_quick_stats(db: AsyncSession = Depends(get_db)):
     res_store = await db.execute(select(func.count(Store.id)))

@@ -1,4 +1,4 @@
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy import create_engine
 from core.config import settings
@@ -10,6 +10,13 @@ if "sqlite" in ASYNC_DB_URL and "+aiosqlite" not in ASYNC_DB_URL:
     ASYNC_DB_URL = ASYNC_DB_URL.replace("sqlite://", "sqlite+aiosqlite://")
 elif "postgresql" in ASYNC_DB_URL and "+asyncpg" not in ASYNC_DB_URL:
     ASYNC_DB_URL = ASYNC_DB_URL.replace("postgresql://", "postgresql+asyncpg://")
+
+try:
+    from sqlalchemy.ext.asyncio import async_sessionmaker
+except ImportError:
+    from sqlalchemy.orm import sessionmaker
+    def async_sessionmaker(bind, class_, **kwargs):
+        return sessionmaker(bind=bind, class_=class_, **kwargs)
 
 # Connect args for SQLite
 # Connect args

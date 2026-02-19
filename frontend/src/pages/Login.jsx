@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { UserCircleIcon, LockClosedIcon } from '@heroicons/react/24/outline';
+import { UserCircleIcon, LockClosedIcon, BuildingOfficeIcon, DevicePhoneMobileIcon } from '@heroicons/react/24/outline';
+import { isMobile, isDesktop } from 'react-device-detect';
 
 const Login = () => {
     const [isLogin, setIsLogin] = useState(true);
@@ -14,23 +15,51 @@ const Login = () => {
 
     const from = location.state?.from?.pathname || '/';
 
-    const handleSubmit = async (e) => {
+    const handleLogin = async (type) => {
+        setError('');
+
+        // Device Validation
+        if (type === 'OFFICE') {
+            if (isMobile) {
+                setError('⚠️ Ofis paneline sadece bilgisayardan veya tabletten erişilebilir.');
+                return;
+            }
+        } else if (type === 'FIELD') {
+            if (!isMobile) {
+                // For testing purposes, we might allow it, but user requested restriction.
+                // Strict check: if (isDesktop) ...
+                // Let's stick to the rule: "Saha ise !isMobile -> Hata"
+                setError('⚠️ Saha operasyonuna sadece mobil cihazlardan erişilebilir.');
+                return;
+            }
+        }
+
+        try {
+            await login(email, password);
+
+            if (type === 'FIELD') {
+                navigate('/pos');
+            } else {
+                navigate(from, { replace: true });
+            }
+
+        } catch (err) {
+            console.error(err);
+            setError(err.message || 'Giriş başarısız.');
+        }
+    };
+
+    const handleSignup = async (e) => {
         e.preventDefault();
         setError('');
         try {
-            if (isLogin) {
-                await login(email, password);
-                navigate(from, { replace: true });
-            } else {
-                await signUp(email, password);
-                setError('Kayıt başarılı! Giriş yapabilirsiniz.');
-                setIsLogin(true);
-            }
+            await signUp(email, password);
+            setError('Kayıt başarılı! Giriş yapabilirsiniz.');
+            setIsLogin(true);
         } catch (err) {
-            console.error(err);
-            setError(err.message || (isLogin ? 'Giriş başarısız.' : 'Kayıt başarısız.'));
+            setError(err.message || 'Kayıt başarısız.');
         }
-    };
+    }
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-slate-900 overflow-hidden relative">
@@ -43,7 +72,7 @@ const Login = () => {
             <div className="relative z-10 w-full max-w-md p-8 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl">
                 <div className="text-center mb-8">
                     <h2 className="text-3xl font-bold text-white mb-2">{isLogin ? 'Hoş Geldiniz' : 'Hesap Oluştur'}</h2>
-                    <p className="text-slate-300">{isLogin ? 'Merkezi Komuta Paneline Giriş Yapın' : 'Yeni bir RetailDSS hesabı başlatın'}</p>
+                    <p className="text-slate-300">{isLogin ? 'Operasyon Tipini Seçerek Giriş Yapın' : 'Yeni bir RetailDSS hesabı başlatın'}</p>
                 </div>
 
                 {error && (
@@ -52,7 +81,7 @@ const Login = () => {
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={isLogin ? (e) => e.preventDefault() : handleSignup} className="space-y-6">
                     <div>
                         <label className="block text-sm font-medium text-slate-300 mb-2">E-posta Adresi</label>
                         <div className="relative">
@@ -84,38 +113,52 @@ const Login = () => {
                         </div>
                     </div>
 
-                    <div className="pt-2">
-                        <label className="block text-sm font-medium text-slate-400 mb-2">Hızlı Giriş (Demo Hesaplar)</label>
-                        <select
-                            onChange={(e) => {
-                                if (e.target.value) {
-                                    setEmail(e.target.value);
-                                    setPassword("123456");
-                                }
-                            }}
-                            className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-                        >
-                            <option value="">Hesap Seçin...</option>
-                            <option value="admin@retaildss.com">Admin (Yönetici)</option>
-                            <option value="user1@retaildss.com">Mağaza Müdürü 1</option>
-                            <option value="user2@retaildss.com">Mağaza Müdürü 2</option>
-                            <option value="user3@retaildss.com">Mağaza Müdürü 3</option>
-                            <option value="user4@retaildss.com">Mağaza Müdürü 4</option>
-                            <option value="user5@retaildss.com">Mağaza Müdürü 5</option>
-                            <option value="user6@retaildss.com">Bölge Sorumlusu 6</option>
-                            <option value="user7@retaildss.com">Bölge Sorumlusu 7</option>
-                            <option value="user8@retaildss.com">Analist 8</option>
-                            <option value="user9@retaildss.com">Analist 9</option>
-                            <option value="user10@retaildss.com">Stajyer 10</option>
-                        </select>
-                    </div>
+                    {isLogin && (
+                        <div className="pt-2">
+                            <label className="block text-sm font-medium text-slate-400 mb-2">Hızlı Giriş (Demo Hesaplar)</label>
+                            <select
+                                onChange={(e) => {
+                                    if (e.target.value) {
+                                        setEmail(e.target.value);
+                                        setPassword("123456");
+                                    }
+                                }}
+                                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                            >
+                                <option value="">Hesap Seçin...</option>
+                                <option value="admin@retaildss.com">Admin (Yönetici)</option>
+                                <option value="user1@retaildss.com">Mağaza Müdürü 1</option>
+                            </select>
+                        </div>
+                    )}
 
-                    <button
-                        type="submit"
-                        className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-lg transform transition-all hover:scale-[1.02] active:scale-[0.98]"
-                    >
-                        {isLogin ? 'Giriş Yap' : 'Kayıt Ol'}
-                    </button>
+                    {isLogin ? (
+                        <div className="flex gap-4 pt-2">
+                            <button
+                                type="button"
+                                onClick={() => handleLogin('OFFICE')}
+                                className="flex-1 flex flex-col items-center justify-center py-4 px-2 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-xl transition-all border border-slate-600 hover:border-blue-500 group"
+                            >
+                                <BuildingOfficeIcon className="w-8 h-8 mb-2 text-blue-400 group-hover:scale-110 transition-transform" />
+                                Ofis Girişi
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleLogin('FIELD')}
+                                className="flex-1 flex flex-col items-center justify-center py-4 px-2 bg-gradient-to-br from-indigo-900 to-purple-900 hover:from-indigo-800 hover:to-purple-800 text-white font-semibold rounded-xl transition-all border border-purple-500/30 hover:border-purple-400 shadow-lg group"
+                            >
+                                <DevicePhoneMobileIcon className="w-8 h-8 mb-2 text-purple-300 group-hover:scale-110 transition-transform" />
+                                Saha Girişi
+                            </button>
+                        </div>
+                    ) : (
+                        <button
+                            type="submit"
+                            className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-lg transform transition-all hover:scale-[1.02] active:scale-[0.98]"
+                        >
+                            Kayıt Ol ve Başla
+                        </button>
+                    )}
                 </form>
 
                 <div className="mt-6 text-center text-sm text-slate-400">

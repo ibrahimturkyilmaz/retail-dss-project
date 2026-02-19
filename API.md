@@ -97,3 +97,29 @@ Doğrudan SQL sorgusu çalıştırma (Yalnızca SELECT).
 ### `GET /health`
 Sistem sağlık durumunu kontrol eder.
 - **Response:** `{ "status": "ok", "db": "connected" }`
+
+---
+
+## 🎁 Sadakat Programı (Loyalty)
+
+### `POST /api/pos/sales`
+Satış işlemi sırasında sadakat puanı kazanımı ve kullanımı.
+- **Query Params:** `customer_id` (Opsiyonel), `email` (Opsiyonel)
+- **Body (Ödeme Kısmı):**
+  ```json
+  "payments": [
+    { "payment_method": "POINTS", "amount": 50.0 },
+    { "payment_method": "CREDIT_CARD", "amount": 100.0 }
+  ]
+  ```
+- **Logic:**
+  - Puan bakiyesi yetersizse `400 Bad Request` döner.
+  - Kazanılan puan `points_earned` alanında döner.
+
+### `POST /api/pos/returns`
+İade işleminde puanların geri alınması.
+- **Query Params:** `receipt_no`
+- **Logic:**
+  - Kullanılan puanlar müşteriye **iade edilir**.
+  - O satıştan kazanılan puanlar müşteriden **geri alınır**.
+  - Alışveriş sayısı 1 azaltılır.

@@ -14,15 +14,22 @@ import contextlib
 
 # Import Routers
 from routers import (
-    users, 
-    sales, 
-    stores, 
-    products, 
-    analytics, 
-    simulation, 
+    users,
+    sales,
+    stores,
+    products,
+    analytics,
+    simulation,
     integrations,
-    transfers
+    transfers,
+    pos,
+    customers, # Phase 8
+    marketing # Phase 2 (New)
 )
+
+
+
+
 
 # --- Lifespan Events (Startup/Shutdown) ---
 @contextlib.asynccontextmanager
@@ -97,6 +104,9 @@ app.include_router(analytics.router)
 app.include_router(simulation.router)
 app.include_router(integrations.router)
 app.include_router(transfers.router)
+app.include_router(pos.router)
+app.include_router(customers.router) # Phase 8
+app.include_router(marketing.router) # Phase 2 (New)
 
 @app.get("/")
 async def read_root(): 
