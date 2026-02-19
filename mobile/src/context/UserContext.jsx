@@ -18,6 +18,7 @@ export function UserProvider({ children }) {
 
         // Oturum değişikliklerini dinle
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            console.log("Auth State Changed:", _event, session);
             setSession(session);
             setUser(session?.user ?? null);
             setLoading(false);
