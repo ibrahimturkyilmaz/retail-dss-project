@@ -49,6 +49,10 @@ export default function LoginScreen({ onLogin }) {
                 alert('Lütfen geçerli bir Gmail adresi girin.');
                 return;
             }
+            if (!googleName || googleName.trim().length < 2) {
+                alert('Lütfen adınızı ve soyadınızı girin.');
+                return;
+            }
             setGoogleStep(2);
             return;
         }
@@ -61,19 +65,22 @@ export default function LoginScreen({ onLogin }) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     email: googleEmail,
-                    name: googleName || googleEmail.split('@')[0],
-                    photo: `https://ui-avatars.com/api/?name=${encodeURIComponent(googleName || googleEmail.split('@')[0])}&background=4f46e5&color=fff&size=200`,
-                    provider: 'google'
+                    name: googleName.trim()
                 })
             });
 
-            if (!response.ok) throw new Error('Google Login Failed');
+            if (!response.ok) {
+                const errData = await response.json().catch(() => null);
+                const errMsg = errData?.detail || `Sunucu hatası (${response.status})`;
+                alert(`Google ile giriş başarısız: ${errMsg}`);
+                return;
+            }
 
             const data = await response.json();
             onLogin(data);
         } catch (e) {
-            console.error(e);
-            alert("Google ile giriş yapılamadı. Bağlantınızı kontrol edin.");
+            console.error("Google Login Error:", e);
+            alert(`Bağlantı hatası: ${e.message}. API: ${API_URL}`);
         } finally {
             setIsLoading(false);
             setShowGoogleModal(false);
@@ -286,7 +293,7 @@ export default function LoginScreen({ onLogin }) {
                                             </div>
                                         </div>
                                         <div className="space-y-1.5">
-                                            <label className="text-sm font-semibold text-gray-700 ml-1">Ad Soyad</label>
+                                            <label className="text-sm font-semibold text-gray-700 ml-1">Ad Soyad <span className="text-red-500">*</span></label>
                                             <div className="relative">
                                                 <User size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                                                 <input
