@@ -134,7 +134,9 @@ async def mobile_login(data: dict, background_tasks: BackgroundTasks, db: AsyncS
     await db.refresh(new_customer)
     
     # Send welcome email in background
-    background_tasks.add_task(_send_welcome_email, new_customer.email, new_customer.name, new_customer.surname)
+    # Send welcome email in background
+    from core.email import send_welcome_email_customer
+    background_tasks.add_task(send_welcome_email_customer, new_customer.email, new_customer.name)
     
     return MobileLoginResponse(
         id=new_customer.id,
@@ -197,94 +199,5 @@ async def update_preferences(customer_id: int, prefs: UpdatePreferences, db: Asy
     
     return {"status": "success", "interested_in_marketing": customer.interested_in_marketing}
 
-def _send_welcome_email(to_email: str, name: str, surname: str = None):
-    """Background task: Yeni musteriye hos geldin maili gonder."""
-    from services.email_service import send_z_report_email
-    
-    full_name = f"{name} {surname}" if surname else name
-    first_letter = (name[0] if name else "R").upper()
-    
-    html_content = f"""<html><head><meta charset="utf-8"></head>
-<body style="margin:0;padding:0;background-color:#0f0f23;font-family:'Segoe UI',Roboto,Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0f0f23;padding:30px 0;">
-<tr><td align="center">
-<table width="580" cellpadding="0" cellspacing="0" style="background:#1a1a2e;border-radius:24px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
 
-<!-- HERO -->
-<tr><td style="background:linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f093fb 100%);padding:50px 40px;text-align:center;">
-<div style="width:80px;height:80px;background:rgba(255,255,255,0.2);border-radius:20px;margin:0 auto 20px;line-height:80px;font-size:36px;color:#fff;font-weight:bold;">{first_letter}</div>
-<h1 style="color:#fff;margin:0 0 8px;font-size:32px;font-weight:800;">Merhaba, {full_name}!</h1>
-<p style="color:rgba(255,255,255,0.85);margin:0;font-size:16px;">StyleStore ailesine hosgeldiniz</p>
-</td></tr>
-
-<!-- WELCOME BADGE -->
-<tr><td style="padding:30px 40px 10px;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#1e3a5f,#16213e);border-radius:16px;border:1px solid rgba(102,126,234,0.3);">
-<tr>
-<td style="padding:20px 24px;" width="60">
-<div style="width:48px;height:48px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:14px;text-align:center;line-height:48px;font-size:22px;">&#127881;</div>
-</td>
-<td style="padding:20px 16px 20px 0;">
-<p style="color:#667eea;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin:0 0 4px;">Hos Geldin Bonusu</p>
-<p style="color:#ffffff;font-size:22px;font-weight:800;margin:0;">100 Puan Hediye!</p>
-</td>
-</tr>
-</table>
-</td></tr>
-
-<!-- FEATURES -->
-<tr><td style="padding:20px 40px;">
-<p style="color:rgba(255,255,255,0.5);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:3px;margin:0 0 16px;">Sizi Neler Bekliyor</p>
-<table width="100%" cellpadding="0" cellspacing="0">
-<tr>
-<td width="33%" style="padding:8px 6px 8px 0;vertical-align:top;">
-<div style="background:#16213e;border-radius:16px;padding:20px 14px;text-align:center;border:1px solid rgba(255,255,255,0.06);">
-<div style="font-size:28px;margin-bottom:10px;">&#11088;</div>
-<p style="color:#fff;font-size:13px;font-weight:700;margin:0 0 4px;">Sadakat Puanlari</p>
-<p style="color:rgba(255,255,255,0.4);font-size:11px;margin:0;">Her alisveriste kazan</p>
-</div>
-</td>
-<td width="33%" style="padding:8px 3px;vertical-align:top;">
-<div style="background:#16213e;border-radius:16px;padding:20px 14px;text-align:center;border:1px solid rgba(255,255,255,0.06);">
-<div style="font-size:28px;margin-bottom:10px;">&#127919;</div>
-<p style="color:#fff;font-size:13px;font-weight:700;margin:0 0 4px;">Ozel Kampanyalar</p>
-<p style="color:rgba(255,255,255,0.4);font-size:11px;margin:0;">Size ozel firsatlar</p>
-</div>
-</td>
-<td width="33%" style="padding:8px 0 8px 6px;vertical-align:top;">
-<div style="background:#16213e;border-radius:16px;padding:20px 14px;text-align:center;border:1px solid rgba(255,255,255,0.06);">
-<div style="font-size:28px;margin-bottom:10px;">&#128205;</div>
-<p style="color:#fff;font-size:13px;font-weight:700;margin:0 0 4px;">Yakin Magaza</p>
-<p style="color:rgba(255,255,255,0.4);font-size:11px;margin:0;">Konuma ozel bildirim</p>
-</div>
-</td>
-</tr>
-</table>
-</td></tr>
-
-<!-- CTA -->
-<tr><td style="padding:10px 40px 30px;text-align:center;">
-<table cellpadding="0" cellspacing="0" style="margin:0 auto;">
-<tr><td style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:14px;padding:16px 48px;">
-<a href="#" style="color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;letter-spacing:0.5px;">Alisverise Basla &#8594;</a>
-</td></tr>
-</table>
-</td></tr>
-
-<!-- FOOTER -->
-<tr><td style="background:#12122a;padding:24px 40px;border-top:1px solid rgba(255,255,255,0.05);">
-<table width="100%" cellpadding="0" cellspacing="0">
-<tr>
-<td><p style="color:rgba(255,255,255,0.25);font-size:11px;margin:0;">StyleStore by Retail DSS<br>Bu mail otomatik olarak gonderilmistir.</p></td>
-<td align="right"><p style="color:rgba(255,255,255,0.15);font-size:10px;margin:0;">v1.3.0</p></td>
-</tr>
-</table>
-</td></tr>
-
-</table>
-</td></tr>
-</table>
-</body></html>"""
-    
-    send_z_report_email(to_email, "Hosgeldiniz! StyleStore Ailesine Katildiniz", html_content)
-
+# Local _send_welcome_email removed. Use core.email.send_welcome_email_customer instead.

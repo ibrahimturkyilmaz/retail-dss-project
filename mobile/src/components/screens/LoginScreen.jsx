@@ -10,6 +10,8 @@ export default function LoginScreen({ onLogin }) {
     const [name, setName] = useState('');
     const [surname, setSurname] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [showProfileModal, setShowProfileModal] = useState(false);
+    const [googleUser, setGoogleUser] = useState(null);
 
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
