@@ -4,13 +4,13 @@ import BottomNav from './components/layout/BottomNav';
 import HomeScreen from './components/screens/HomeScreen';
 import ShopScreen from './components/screens/ShopScreen';
 import ProfileScreen from './components/screens/ProfileScreen';
+import ProfileSetupScreen from './components/screens/ProfileSetupScreen';
 import NotificationOverlay from './components/ui/NotificationOverlay';
 import StatusBar from './components/ui/StatusBar';
 import SplashScreen from './components/ui/SplashScreen';
 import LoginScreen from './components/screens/LoginScreen';
 import FavoritesScreen from './components/screens/FavoritesScreen';
 import CartScreen from './components/screens/CartScreen';
-// import { api } from './services/api'; // Legacy API removed
 import { mockProducts, mockStores } from './data/mockData';
 import { useGeofencing } from './hooks/useGeofencing';
 import { LocationProvider } from './context/LocationContext';
@@ -28,6 +28,7 @@ function MainLayout() {
   // App Flow State
   const [showSplash, setShowSplash] = useState(false);
   const [showLogin, setShowLogin] = useState(true);
+  const [showProfileSetup, setShowProfileSetup] = useState(false);
 
   const { notification, dismissNotification, simulateEnterRegion, simulateInStore } = useGeofencing(stores);
 
@@ -39,12 +40,10 @@ function MainLayout() {
   }, [user, loading]);
 
   useEffect(() => {
-    // Load local mock data
     const initData = () => {
       setProducts(mockProducts);
       setStores(mockStores);
     };
-
     initData();
   }, []);
 
@@ -52,14 +51,29 @@ function MainLayout() {
     return <div className="flex items-center justify-center min-h-screen bg-gray-50">Yükleniyor...</div>;
   }
 
-  const handleLogin = (user) => {
-    login(user);
+  const handleLogin = (userData) => {
+    login(userData);
     setShowLogin(false);
+
+    // If new user, show profile setup
+    if (userData.is_new_user) {
+      setShowProfileSetup(true);
+    } else {
+      setShowSplash(true);
+    }
+  };
+
+  const handleProfileSetupComplete = () => {
+    setShowProfileSetup(false);
     setShowSplash(true);
   };
 
   const handleSplashComplete = () => {
     setShowSplash(false);
+  };
+
+  const handleEditProfile = () => {
+    setShowProfileSetup(true);
   };
 
   const renderScreen = () => {
@@ -85,6 +99,7 @@ function MainLayout() {
           <ProfileScreen
             notificationsEnabled={notificationsEnabled}
             setNotificationsEnabled={setNotificationsEnabled}
+            onEditProfile={handleEditProfile}
           />
         );
       default:
@@ -94,6 +109,10 @@ function MainLayout() {
 
   if (showLogin) {
     return <LoginScreen onLogin={handleLogin} />;
+  }
+
+  if (showProfileSetup) {
+    return <ProfileSetupScreen onComplete={handleProfileSetupComplete} />;
   }
 
   if (showSplash) {

@@ -1,15 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Settings, CreditCard, Bell, LogOut, ChevronRight, Package, MapPin, Heart, Shield, Navigation, ToggleLeft, ToggleRight, Mail } from 'lucide-react';
+import { User, Settings, CreditCard, Bell, LogOut, ChevronRight, Package, MapPin, Heart, Shield, Navigation, Mail, CheckCircle, Edit3 } from 'lucide-react';
 import { useUser } from '../../context/UserContext';
 import { useLocation } from '../../context/LocationContext';
 import { clsx } from 'clsx';
 
-export default function ProfileScreen({ notificationsEnabled, setNotificationsEnabled }) {
+export default function ProfileScreen({ notificationsEnabled, setNotificationsEnabled, onEditProfile }) {
     const { user, logout } = useUser();
     const { locationEnabled, setLocationEnabled, requestPermission, address } = useLocation();
 
     if (!user) return null;
+
+    const fullName = [user.name, user.surname].filter(Boolean).join(' ');
+    const avatarUrl = user.photo_url || 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400&auto=format&fit=crop&q=80';
 
     const handleLocationToggle = () => {
         if (locationEnabled) {
@@ -21,7 +24,7 @@ export default function ProfileScreen({ notificationsEnabled, setNotificationsEn
     };
 
     const menuItems = [
-        { icon: <Package size={20} />, label: 'Siparişlerim', value: '12 Aktif' },
+        { icon: <Package size={20} />, label: 'Siparişlerim', value: `${user.total_shopping_count || 0} Sipariş` },
         { icon: <Heart size={20} />, label: 'Favorilerim', value: '5 Ürün' },
         { icon: <MapPin size={20} />, label: 'Adreslerim', value: '2 Kayıtlı' },
         { icon: <CreditCard size={20} />, label: 'Ödeme Yöntemleri', value: '**42' },
@@ -61,22 +64,32 @@ export default function ProfileScreen({ notificationsEnabled, setNotificationsEn
             <div className="px-6 -mt-48 relative z-10">
                 {/* Profile Header */}
                 <div className="flex flex-col items-center mb-6">
-                    <div className="relative mb-4 group cursor-pointer">
+                    <div className="relative mb-4 group cursor-pointer" onClick={onEditProfile}>
                         <div className="w-28 h-28 rounded-full p-1 bg-gradient-to-tr from-indigo-500 to-teal-500 shadow-xl shadow-indigo-500/20">
                             <div className="w-full h-full bg-white rounded-full p-1">
                                 <img
-                                    src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400&auto=format&fit=crop&q=80"
+                                    src={avatarUrl}
                                     alt="Profile"
                                     className="w-full h-full rounded-full object-cover transition-transform duration-500 group-hover:scale-110"
                                 />
                             </div>
                         </div>
                         <div className="absolute bottom-0 right-2 bg-indigo-600 text-white rounded-full p-2 border-4 border-slate-900 shadow-md">
-                            <Settings size={14} />
+                            <Edit3 size={14} />
                         </div>
                     </div>
-                    <h1 className="text-3xl font-bold text-white mb-1 font-heading tracking-tight">{user.name}</h1>
-                    <p className="text-indigo-200 font-medium">✨ Gold Üye</p>
+                    <h1 className="text-3xl font-bold text-white mb-1 font-heading tracking-tight">{fullName}</h1>
+
+                    {/* Email with verified badge */}
+                    <div className="flex items-center gap-1.5 mt-1">
+                        <Mail size={14} className="text-indigo-300" />
+                        <span className="text-indigo-200 text-sm">{user.email}</span>
+                        {user.email_verified && (
+                            <CheckCircle size={14} className="text-emerald-400" />
+                        )}
+                    </div>
+
+                    <p className="text-indigo-200 font-medium mt-2">✨ {user.points_balance > 100 ? 'Gold' : 'Standart'} Üye</p>
                 </div>
 
                 {/* Live Location Display Card */}
@@ -102,11 +115,11 @@ export default function ProfileScreen({ notificationsEnabled, setNotificationsEn
                 {!locationEnabled && (
                     <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-3xl p-6 mb-8 shadow-xl grid grid-cols-3 gap-4 text-center">
                         <div>
-                            <span className="block text-2xl font-bold text-white mb-1 font-heading">1500</span>
+                            <span className="block text-2xl font-bold text-white mb-1 font-heading">{Math.round(user.points_balance || 0)}</span>
                             <span className="text-xs text-indigo-100 uppercase tracking-widest font-semibold">Puan</span>
                         </div>
                         <div className="border-x border-white/10">
-                            <span className="block text-2xl font-bold text-white mb-1 font-heading">12</span>
+                            <span className="block text-2xl font-bold text-white mb-1 font-heading">{user.total_shopping_count || 0}</span>
                             <span className="text-xs text-indigo-100 uppercase tracking-widest font-semibold">Sipariş</span>
                         </div>
                         <div>
@@ -176,7 +189,7 @@ export default function ProfileScreen({ notificationsEnabled, setNotificationsEn
                 </button>
 
                 <p className="text-center text-slate-400 text-xs font-medium pb-8">
-                    Version 1.2.0 • Build 2024.04
+                    Version 1.3.0 • Build 2024.05
                 </p>
             </div>
         </div>

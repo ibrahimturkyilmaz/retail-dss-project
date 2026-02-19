@@ -56,9 +56,12 @@ class Customer(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
+    surname = Column(String, nullable=True)  # Soyisim
     city = Column(String)
     phone = Column(String, unique=True, index=True, nullable=True) # Phase 8
     email = Column(String, nullable=True) # Phase 3 requirement
+    photo_url = Column(String, nullable=True)  # Profil fotoğrafı URL
+    email_verified = Column(Boolean, default=False)  # Email doğrulandı mı?
     
     # Loyalty Config (Phase 8)
     loyalty_score = Column(Float, default=0) # Legacy field
