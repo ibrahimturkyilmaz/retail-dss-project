@@ -74,7 +74,7 @@ export function LocationProvider({ children }) {
                     // Adres verisini (Geocoding) çekme
                     try {
                         const addr = await fetchAddressFromCoords(latitude, longitude);
-                        if (addr) setAddress(addr.short);
+                        if (addr) setAddress(addr);
                     } catch (e) {
                         console.warn("Address fetch failed", e);
                     }

@@ -76,7 +76,8 @@ async def mobile_login(data: dict, db: AsyncSession = Depends(get_db)):
         phone=None, # Opsiyonel
         city="Mobil",
         points_balance=0,
-        total_shopping_count=0
+        total_shopping_count=0,
+        interested_in_marketing=True # Mobile users opt-in by default
     )
     
     db.add(new_customer)
