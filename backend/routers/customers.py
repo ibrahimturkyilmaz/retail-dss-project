@@ -115,10 +115,8 @@ async def mobile_login(data: dict, background_tasks: BackgroundTasks, db: AsyncS
             await db.commit()
             await db.refresh(existing_customer)
         
-        # Send login email on EVERY login
-        logger.info(f"📧 Existing customer login: {existing_customer.email}. Queuing login email...")
-        from core.email import send_welcome_email_customer
-        background_tasks.add_task(send_welcome_email_customer, existing_customer.email, existing_customer.name)
+        # NOTE: Intentionally removed the welcome email send logic here
+        # to prevent users from receiving it multiple times purely for logging in.
         
         return MobileLoginResponse(
             id=existing_customer.id,
@@ -151,11 +149,11 @@ async def mobile_login(data: dict, background_tasks: BackgroundTasks, db: AsyncS
     await db.commit()
     await db.refresh(new_customer)
     
-    # Send welcome email in background
+    # Send welcome email in background ONLY for new customers
     logger.info(f"🆕 New Customer Created: {new_customer.email}. Queuing welcome email...")
     from core.email import send_welcome_email_customer
     background_tasks.add_task(send_welcome_email_customer, new_customer.email, new_customer.name)
-    logger.info(f"📧 Background task added for {new_customer.email}")
+    logger.info(f"📧 Background task added to welcome {new_customer.email}")
     
     return MobileLoginResponse(
         id=new_customer.id,

@@ -121,66 +121,233 @@ def send_welcome_email_customer(to_email: str, name: str):
     resend.api_key = settings.RESEND_API_KEY
     subject = "StyleStore Ailesine Hoş Geldiniz! 🎉"
     
+    # Use the nice HTML template from customers.py or a better one
     first_letter = (name[0] if name else "C").upper()
     
     html_content = f"""
     <!DOCTYPE html>
-    <html>
+    <html lang="tr">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Hoş Geldiniz</title>
+        <title>StyleStore'a Hoş Geldiniz</title>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+            body {{
+                margin: 0;
+                padding: 0;
+                background-color: #f7f9fc;
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+                color: #1e293b;
+                -webkit-font-smoothing: antialiased;
+            }}
+            .wrapper {{
+                width: 100%;
+                background-color: #f7f9fc;
+                padding: 40px 0;
+            }}
+            .container {{
+                max-width: 600px;
+                margin: 0 auto;
+                background-color: #ffffff;
+                border-radius: 24px;
+                overflow: hidden;
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            }}
+            .header {{
+                background: linear-gradient(135deg, #1e1b4b 0%, #4338ca 100%);
+                padding: 60px 40px;
+                text-align: center;
+                position: relative;
+                overflow: hidden;
+            }}
+            .header::after {{
+                content: '';
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                left: 0;
+                background: radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%);
+                pointer-events: none;
+            }}
+            .avatar {{
+                width: 88px;
+                height: 88px;
+                background: linear-gradient(135deg, #818cf8 0%, #4f46e5 100%);
+                border-radius: 50%;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 24px;
+                box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.1);
+                color: #ffffff;
+                font-size: 36px;
+                font-weight: 700;
+                line-height: 88px;
+            }}
+            .title {{
+                color: #ffffff;
+                margin: 0;
+                font-size: 32px;
+                font-weight: 700;
+                letter-spacing: -0.02em;
+                line-height: 1.2;
+            }}
+            .subtitle {{
+                color: #c7d2fe;
+                margin: 12px 0 0 0;
+                font-size: 18px;
+                font-weight: 400;
+            }}
+            .content {{
+                padding: 48px 40px;
+            }}
+            .greeting {{
+                font-size: 24px;
+                font-weight: 600;
+                color: #0f172a;
+                margin-top: 0;
+                margin-bottom: 16px;
+            }}
+            .message {{
+                font-size: 16px;
+                line-height: 1.6;
+                color: #475569;
+                margin-bottom: 32px;
+            }}
+            .reward-card {{
+                background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+                border: 1px solid #e2e8f0;
+                border-radius: 20px;
+                padding: 24px;
+                display: flex;
+                align-items: center;
+                margin-bottom: 40px;
+                position: relative;
+                overflow: hidden;
+            }}
+            .reward-card::before {{
+                content: '';
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                width: 4px;
+                background: linear-gradient(to bottom, #4f46e5, #ec4899);
+            }}
+            .reward-icon {{
+                font-size: 40px;
+                margin-right: 24px;
+                line-height: 1;
+            }}
+            .reward-content {{
+                flex: 1;
+            }}
+            .reward-label {{
+                color: #64748b;
+                font-size: 13px;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                font-weight: 600;
+                margin-bottom: 4px;
+            }}
+            .reward-value {{
+                color: #0f172a;
+                font-size: 24px;
+                font-weight: 700;
+                margin: 0;
+            }}
+            .cta-container {{
+                text-align: center;
+            }}
+            .btn {{
+                display: inline-block;
+                background-color: #0f172a;
+                color: #ffffff !important;
+                text-decoration: none;
+                padding: 16px 40px;
+                border-radius: 9999px;
+                font-weight: 600;
+                font-size: 16px;
+                transition: transform 0.2s, box-shadow 0.2s;
+                box-shadow: 0 4px 14px 0 rgba(15, 23, 42, 0.2);
+            }}
+            .footer {{
+                background-color: #f8fafc;
+                padding: 32px 40px;
+                text-align: center;
+                border-top: 1px solid #e2e8f0;
+            }}
+            .social-links {{
+                margin-bottom: 24px;
+            }}
+            .social-links a {{
+                color: #64748b;
+                text-decoration: none;
+                margin: 0 12px;
+                font-weight: 500;
+                font-size: 14px;
+            }}
+            .footer p {{
+                margin: 0;
+                color: #94a3b8;
+                font-size: 13px;
+                line-height: 1.5;
+            }}
+        </style>
     </head>
-    <body style="margin: 0; padding: 0; background-color: #0f172a; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
-            <tr>
-                <td style="padding: 40px 0; text-align: center;">
-                    <div style="max-width: 600px; margin: 0 auto; background-color: #1e293b; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
-                        
-                        <!-- Header / Banner -->
-                        <div style="background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%); padding: 50px 0; text-align: center;">
-                            <div style="width: 80px; height: 80px; background-color: rgba(255, 255, 255, 0.2); border-radius: 20px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; backdrop-filter: blur(10px);">
-                                <span style="font-size: 40px; color: #fff; font-weight: bold;">{first_letter}</span>
-                            </div>
-                            <h1 style="color: #ffffff; margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -0.5px;">Merhaba {name}!</h1>
-                            <p style="color: rgba(255,255,255,0.9); margin-top: 10px; font-size: 16px;">StyleStore'a Hoş Geldin</p>
-                        </div>
+    <body>
+        <div class="wrapper">
+            <div class="container">
+                
+                <!-- Header -->
+                <div class="header">
+                    <div class="avatar">{first_letter}</div>
+                    <h1 class="title">Aramıza Hoş Geldin!</h1>
+                    <p class="subtitle">StyleStore ailesine katıldığın için mutluyuz.</p>
+                </div>
 
-                        <!-- Content -->
-                        <div style="padding: 40px 30px;">
-                            
-                            <!-- Welcome Badge -->
-                            <div style="background: linear-gradient(to right, #312e81, #1e1b4b); border-radius: 16px; padding: 20px; border: 1px solid #4338ca; display: flex; align-items: center; margin-bottom: 30px;">
-                                <div style="font-size: 32px; margin-right: 20px;">🎁</div>
-                                <div>
-                                    <h3 style="color: #818cf8; margin: 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Hoş Geldin Hediyesi</h3>
-                                    <p style="color: #ffffff; margin: 5px 0 0 0; font-size: 20px; font-weight: bold;">100 Sadakat Puanı</p>
-                                </div>
-                            </div>
-
-                            <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
-                                Mobil uygulamamız üzerinden yapacağınız alışverişlerde puan kazanabilir, size özel kampanyalardan yararlanabilirsiniz.
-                            </p>
-
-                            <!-- CTA Button -->
-                            <div style="text-align: center; margin-top: 10px;">
-                                <a href="#" style="display: inline-block; background-color: #6366f1; color: #ffffff; text-decoration: none; padding: 16px 48px; border-radius: 12px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);">
-                                    Alışverişe Başla
-                                </a>
-                            </div>
-                        </div>
-
-                        <!-- Footer -->
-                        <div style="background-color: #0f172a; padding: 24px; text-align: center; border-top: 1px solid #334155;">
-                            <p style="margin: 0; color: #64748b; font-size: 12px;">
-                                &copy; 2026 RetailDSS StyleStore.<br>
-                                Bu e-posta otomatik olarak gönderilmiştir.
-                            </p>
+                <!-- Content -->
+                <div class="content">
+                    <h2 class="greeting">Merhaba {name},</h2>
+                    <p class="message">
+                        Alışveriş deneyimini yeniden tanımlaman için özel olarak tasarlanmış StyleStore mobil uygulamasına giriş yaptın. Artık favori ürünlerini keşfedebilir, sana özel fırsatlardan yararlanabilirsin.
+                    </p>
+                    
+                    <!-- Reward Card -->
+                    <div class="reward-card">
+                        <div class="reward-icon">🎁</div>
+                        <div class="reward-content">
+                            <div class="reward-label">Hoş Geldin Hediyen</div>
+                            <h3 class="reward-value">100 Sadakat Puanı</h3>
                         </div>
                     </div>
-                </td>
-            </tr>
-        </table>
+
+                    <p class="message" style="margin-bottom: 40px;">
+                        Puanların hemen hesabına tanımlandı. İlk alışverişinde <b>kasa aşamasında</b> bu puanları indirim olarak kullanabilirsin!
+                    </p>
+
+                    <!-- CTA Button -->
+                    <div class="cta-container">
+                        <a href="#" class="btn">Uygulamaya Dön</a>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="footer">
+                    <div class="social-links">
+                        <a href="#">Instagram</a>
+                        <a href="#">Twitter</a>
+                        <a href="#">Yardım Merkezi</a>
+                    </div>
+                    <p>
+                        &copy; 2026 StyleStore.<br>
+                        Bu e-posta otomatik olarak gönderilmiştir. Lütfen yanıtlamayınız.
+                    </p>
+                </div>
+            </div>
+        </div>
     </body>
     </html>
     """
