@@ -1,0 +1,28 @@
+# Proje Yeniden Yapılandırma (Restructuring) Planı
+
+## Faz 1: Backend Veri Katmanını Parçalama (Modüler Yapı)
+- [ ] `backend/models/` klasörünü oluştur
+- [ ] Müşteri Modelleri (`models/customer.py`): [Customer](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/backend/models.py#54-74), [User](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/backend/models.py#174-186), [Coupon](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/backend/models.py#75-94), `MarketingCampaign`
+- [ ] Ürün Modelleri (`models/product.py`): [Product](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/backend/models.py#40-53), `Category`, [Inventory](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/backend/models.py#28-39)
+- [ ] Mağaza Modelleri (`models/store.py`): [Store](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/backend/models.py#12-27), [StoreFeatures](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/backend/models.py#158-173)
+- [ ] Satış ve POS Modelleri (`models/sale.py`): [Sale](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/backend/models.py#117-137), `PosSale`, `PosDevice`, `ZReport`
+- [ ] Tahmin Modelleri (`models/forecast.py`): [Forecast](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/backend/models.py#95-111), `StoreTarget`
+- [ ] Transfer Modelleri (`models/transfer.py`): `StoreTransfer`
+- [ ] `models/__init__.py` dosyasını oluştur ve tüm modelleri dışa aktar (export)
+- [ ] Aynı mantığı `backend/schemas/` klasörü için uygula
+- [ ] Tüm router ve servis dosyalarındaki eski `from models import X` ve `from schemas import Y` ifadelerini düzelt
+
+## Faz 2: Frontend Devasa Bileşenleri Bölme
+- [ ] `frontend/src/pages/settings/` klasörü oluştur
+- [ ] Ana Container: [Settings.jsx](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/frontend/src/pages/Settings.jsx) (sadece tab logic'ini ve menüyü içerecek)
+- [ ] `ProfileTab.jsx`: Kullanıcı bilgileri ve takvim URL'i
+- [ ] `AboutTab.jsx`: Proje hakkında statik bilgiler
+- [ ] `ModelAITab.jsx`: Prophet optimizasyon raporu
+- [ ] `GuideTab.jsx` ve `FAQTab.jsx`: Kullanım kılavuzu
+- [ ] [Settings.jsx](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/frontend/src/pages/Settings.jsx) içindeki 1500+ satırlık kodu ilgili tab dosyalarına taşı
+- [ ] Eksik veya bozuk importları düzelt
+
+## Faz 3: Test ve Doğrulama
+- [ ] Backend dev server'ı başlat ve routerların hatasız çalıştığını onayla
+- [ ] Frontend'i derle (`npm run build`) ve build hatası olup olmadığını kontrol et
+- [ ] Frontend uygulamasında Ayarlar sayfasına gidip alt tablar arası geçişin sorunsuz olduğunu doğrula

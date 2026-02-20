@@ -1,0 +1,298 @@
+# 🔍 Proje Denetim Raporu — retail-dss-project
+
+**Tarih:** 20 Şubat 2026  
+**Kapsam:** Backend, Frontend, Mobile — kod yapısı, klasör düzeni, bağımlılıklar, kritik sorunlar
+
+---
+
+## 1. Proje Genel Yapısı
+
+```
+retail-dss-project/
+├── backend/          → FastAPI + SQLAlchemy (Python 3.11)
+├── frontend/         → React 19 + Vite + TailwindCSS v4
+├── mobile/           → React 19 + Vite + TailwindCSS v4 + Framer Motion
+├── docs/             → Dokümantasyon (8 dosya)
+├── render.yaml       → Render deploy konfigürasyonu
+├── retail.db         → ⚠️ SQLite DB (kök dizinde)
+└── 6 markdown dosya  → README, API, DEPLOYMENT, vb.
+```
+
+| Modül | Dosya Sayısı | Toplam Boyut | Deploy |
+|-------|-------------|-------------|--------|
+| **Backend** | ~40 kaynak dosya | ~12 router, 5 service, 13 model | Render |
+| **Frontend** | ~50 bileşen | 8 sayfa, 22 komponent, 9 widget | Vercel (?) |
+| **Mobile** | ~20 bileşen | 5 ekran, 4 context, 1 hook | Vercel |
+
+---
+
+## 2. Backend Denetimi
+
+### 2.1 Teknoloji Yığını
+
+| Teknoloji | Neden Kullanıldı | Değerlendirme |
+|-----------|-----------------|---------------|
+| **FastAPI** | Async REST API framework | ✅ Doğru seçim, modern ve hızlı |
+| **SQLAlchemy 2.0** | ORM — async + sync desteği | ✅ İyi, ama dual engine karmaşıklık ekliyor |
+| **PostgreSQL** (prod) | Ana veritabanı (Render) | ✅ Doğru seçim |
+| **SQLite** (dev) | Yerel geliştirme DB | ⚠️ Prod ile uyumsuzluk riski |
+| **Pydantic v2** | Schema validation | ✅ FastAPI ile doğal uyum |
+| **google-generativeai** | Gemini AI entegrasyonu | ✅ ARAS asistan için gerekli |
+| **Prophet** (model_saved) | Tahmin modeli | ✅ Zaman serisi tahmini için uygun |
+| **scikit-learn + xgboost** | ML modelleri | ⚠️ Aktif olarak kullanılıyor mu kontrol edilmeli |
+| **slowapi** | Rate limiting | ✅ API güvenliği için gerekli |
+
+### 2.2 Klasör Yapısı
+
+```
+backend/
+├── core/              → config, email, exceptions, handlers, logger ✅
+├── routers/           → 12 aktif router (users, sales, stores, ...) ✅
+├── services/          → 5 servis (email, loyalty, marketing, receipt, weather) ✅
+├── scripts/           → deploy, migrations (15 dosya) ⚠️ Çok fazla migration
+├── tests/             → 14 test dosyası ✅
+├── models.py          → 13 ORM model (TEK DOSYA) ⚠️ Büyüyor
+├── schemas.py         → 30+ Pydantic schema (TEK DOSYA) ⚠️ Büyüyor
+├── database.py        → Dual sync + async engine ✅
+├── main.py            → App init, CORS, routers ✅
+├── *_engine.py        → 6 engine dosyası (analysis, cold_start, export, risk, simulation, sync, transfer) ⚠️
+└── *.py (kök)         → generate_*, import_*, inspect_*, trigger_* ⚠️ Utility scriptleri düzensiz
+```
+
+### 2.3 Sorunlar
+
+> [!CAUTION]
+> **Güvenlik:** [main.py](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/backend/main.py) satır 61 — Admin kullanıcı şifresi `password="123"` olarak hardcoded. Production'da büyük risk.
+
+> [!WARNING]
+> **Yapısal:** [models.py](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/backend/models.py) (301 satır) ve [schemas.py](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/backend/schemas.py) (227 satır) tek dosyada tüm modelleri barındırıyor. Ölçeklenme sorunu yaratacak.
+
+> [!WARNING]
+> **Orphaned Code:** `simulation.py` router import ediliyor ama [main.py](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/backend/main.py)'de comment-out: `# app.include_router(simulation.router)`. Temizlenmeli veya kaldırılmalı.
+
+> [!NOTE]
+> **Encoding:** `requirements.txt` UTF-16 LE encoding ile kaydedilmiş. Render ve pip ile uyumluluk sorunu çıkabilir.
+
+---
+
+## 3. Frontend Denetimi
+
+### 3.1 Teknoloji Yığını
+
+| Teknoloji | Neden Kullanıldı | Değerlendirme |
+|-----------|-----------------|---------------|
+| **React 19** | UI framework | ✅ Güncel |
+| **Vite 7** | Build tool | ✅ Hızlı dev server |
+| **TailwindCSS v4** | Utility-first CSS | ✅ Hızlı geliştirme |
+| **react-router-dom v7** | Client-side routing | ✅ Standart seçim |
+| **recharts** | Grafik kütüphanesi | ✅ Dashboard için uygun |
+| **react-leaflet** | Harita bileşeni | ✅ Mağaza haritası için |
+| **@monaco-editor/react** | SQL Playground | ⚠️ Büyük bundle boyutu (~2MB) |
+| **@supabase/supabase-js** | Auth | ✅ Google login için |
+| **react-grid-layout** | Draggable dashboard | ✅ Widget dashboard için |
+| **mermaid** | Diyagram render | ⚠️ Gerçekten kullanılıyor mu? |
+| **html5-qrcode** | QR/Barkod tarama | ✅ POS için |
+| **lodash** | Utility fonksiyonlar | ⚠️ Tree-shaking gerekli, tüm paket import edilmemeli |
+| **react-parallax-tilt** | Parallax efektleri | ⚠️ Kozmetik, bundle şişirebilir |
+
+### 3.2 Klasör Yapısı
+
+```
+frontend/src/
+├── pages/           → 8 sayfa ⚠️ Settings.jsx 66KB (devasa)
+├── components/      → 22 bileşen + 2 alt klasör
+│   ├── pos/         → POS bileşenleri (2 dosya)
+│   └── widgets/     → Dashboard widget'ları (9 dosya)
+├── context/         → 4 context (Auth, Theme, Time, UI) ✅
+├── hooks/           → 6 custom hook ✅
+├── api/             → 1 dosya (axios instance?)
+├── layouts/         → 1 dosya
+├── constants/       → 1 dosya
+├── utils/           → 1 dosya
+└── lib/             → 1 dosya (Supabase?)
+```
+
+### 3.3 Sorunlar
+
+> [!CAUTION]
+> **Settings.jsx — 65,920 byte (66KB!)** Bu TEK bileşen, bir SPA sayfasının tamamından büyük. İçinde muhtemelen About, Profile, Model/AI, FAQ gibi bölümler var. Bu kesinlikle alt bileşenlere bölünmeli.
+
+> [!WARNING]
+> **SqlPlayground.jsx — 36,279 byte (36KB)** Monaco Editor + SQL logic + sonuç tablosu tek dosyada. En az 3 bileşene ayrılmalı.
+
+> [!WARNING]
+> **SmartQueryBar.jsx — 20,137 byte (20KB)** Aşırı büyük arama bileşeni. Zero-API command parsing + UI tek yerde.
+
+> [!NOTE]
+> **38 npm bağımlılığı** — Bazıları gerçekten kullanılıyor mu kontrol edilmeli (ör. `mermaid`, `react-parallax-tilt`).
+
+---
+
+## 4. Mobile Denetimi
+
+### 4.1 Teknoloji Yığını
+
+| Teknoloji | Neden Kullanıldı | Değerlendirme |
+|-----------|-----------------|---------------|
+| **React 19 + Vite** | Mobil web app | ✅ Hızlı geliştirme |
+| **TailwindCSS v4** | Styling | ✅ Frontend ile tutarlı |
+| **Framer Motion** | Animasyonlar | ✅ Mobil UX için güçlü |
+| **Supabase JS** | Google OAuth | ✅ Auth için gerekli |
+| **clsx + tailwind-merge** | Conditional CSS | ⚠️ İkisi birden gerekli mi? `clsx` yeterli olabilir |
+| **axios** | HTTP istekleri | ⚠️ Kodda [fetch](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/mobile/src/context/UserContext.jsx#39-72) kullanılıyor, `axios` package.json'da ama kullanılmıyor olabilir |
+
+### 4.2 Klasör Yapısı
+
+```
+mobile/src/
+├── components/
+│   ├── screens/     → 6 ekran (Home, Login, Profile, Shop, Cart, Favorites, ProfileSetup) ✅
+│   ├── layout/      → BottomNav ✅
+│   └── ui/          → StatusBar, NotificationOverlay, SplashScreen ✅
+├── context/         → 4 context (User, Cart, Favorites, Location) ✅
+├── hooks/           → useGeofencing ✅
+├── utils/           → geocoding, location ✅
+├── data/            → mockData ⚠️ Statik veri
+└── lib/             → supabase config ✅
+```
+
+### 4.3 Sorunlar
+
+> [!WARNING]
+> **Kategori filtresi uyumsuzluğu:** [ShopScreen.jsx](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/mobile/src/components/screens/ShopScreen.jsx) filtreleri (`Tişört`, `Ayakkabı`, `Aksesuar`, `Dış Giyim`, `Pantolon`) ile [mockData.js](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/mobile/src/data/mockData.js) kategorileri (`Dış Giyim`, `Üst Giyim`, `Çanta`, `Aksesuar`) eşleşmiyor.
+
+> [!WARNING]
+> **Placeholder görseller:** [CartScreen.jsx](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/mobile/src/components/screens/CartScreen.jsx) ve [FavoritesScreen.jsx](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/mobile/src/components/screens/FavoritesScreen.jsx) ürünlerde `product.image` yerine sabit flaticon URL kullanıyor.
+
+> [!NOTE]
+> **Dead import:** [useGeofencing.js](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/mobile/src/hooks/useGeofencing.js) içinde [calculateDistance](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/mobile/src/utils/location.js#1-15) import edilip hiç kullanılmıyor.
+
+> [!NOTE]
+> **`axios` yüklü ama kullanılmıyor.** Tüm HTTP istekleri [fetch](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/mobile/src/context/UserContext.jsx#39-72) ile yapılıyor.
+
+---
+
+## 5. Kritik Sorunlar Tablosu
+
+| # | Seviye | Modül | Dosya | Sorun | Önerilen Çözüm |
+|---|--------|-------|-------|-------|----------------|
+| 1 | 🔴 Kritik | Backend | `main.py:61` | Admin şifresi `"123"` hardcoded | Env variable veya hash'li şifre kullan |
+| 2 | 🔴 Kritik | Backend | `requirements.txt` | UTF-16 encoding, pip sorun çıkarabilir | UTF-8 olarak yeniden kaydet |
+| 3 | 🔴 Kritik | Root | [retail.db](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/retail.db) | [.gitignore](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/.gitignore)'da ama repoda mevcut olabilir | `git rm --cached retail.db` ile kaldır |
+| 4 | 🟠 Yüksek | Frontend | [Settings.jsx](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/frontend/src/pages/Settings.jsx) | 66KB — tek dosyada ~1500+ satır bileşen | 5-6 alt bileşene böl |
+| 5 | 🟠 Yüksek | Frontend | [SqlPlayground.jsx](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/frontend/src/components/SqlPlayground.jsx) | 36KB — editör + sorgu + sonuç tek yerde | 3 bileşene ayır |
+| 6 | 🟠 Yüksek | Backend | [models.py](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/backend/models.py) | 13 model tek dosyada (301 satır) | `models/` klasörüne ayır |
+| 7 | 🟠 Yüksek | Backend | [schemas.py](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/backend/schemas.py) | 30+ schema tek dosyada (227 satır) | `schemas/` klasörüne ayır |
+| 8 | 🟡 Orta | Backend | Kök dizin | 6 standalone script (`generate_*`, `import_*` vb.) dağınık | [scripts/](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/scripts) altına taşı |
+| 9 | 🟡 Orta | Backend | `simulation.py` | Router import edilip comment-out | Sil veya geri aç |
+| 10 | 🟡 Orta | Mobile | [ShopScreen.jsx](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/mobile/src/components/screens/ShopScreen.jsx) | Kategori filtreleri mockData ile uyumsuz | Kategorileri eşitle |
+| 11 | 🟡 Orta | Mobile | `CartScreen/FavoritesScreen` | Ürün görselleri placeholder | `product.image` kullan |
+| 12 | 🟡 Orta | Mobile | [ProfileScreen.jsx](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/mobile/src/components/screens/ProfileScreen.jsx) | Sabit değerler: "5 Ürün", "4 Kupon" | Gerçek veriden çek |
+| 13 | 🟢 Düşük | Mobile | [useGeofencing.js](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/mobile/src/hooks/useGeofencing.js) | [calculateDistance](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/mobile/src/utils/location.js#1-15) dead import | Import'u kaldır |
+| 14 | 🟢 Düşük | Mobile | [package.json](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/mobile/package.json) | `axios` yüklü ama kullanılmıyor | Kaldır: `npm uninstall axios` |
+| 15 | 🟢 Düşük | Frontend | [package.json](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/mobile/package.json) | `mermaid` ve `react-parallax-tilt` kullanım durumu belirsiz | Kontrol et, gereksizse kaldır |
+| 16 | 🟢 Düşük | Mobile | [ProfileScreen.jsx](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/mobile/src/components/screens/ProfileScreen.jsx) | Versiyon `1.3.0 Build 2024.05` — eski | Güncelle |
+
+---
+
+## 6. Sadeleştirme Önerileri
+
+### Backend İçin
+
+```diff
+ backend/
+-├── models.py              → TEK dosya, 13 model
+-├── schemas.py             → TEK dosya, 30+ schema
++├── models/                → Klasöre ayrılmalı
++│   ├── __init__.py
++│   ├── store.py           → Store, StoreFeatures, Inventory
++│   ├── product.py         → Product
++│   ├── customer.py        → Customer, Coupon
++│   ├── sale.py            → Sale
++│   ├── pos.py             → PosSale, PosDevice, ZReport
++│   ├── user.py            → User, CalendarNote
++│   └── forecast.py        → Forecast
++├── schemas/               → Benzer şekilde ayrılmalı
++│   ├── __init__.py
++│   ├── store.py
++│   ├── product.py
++│   └── ...
+
+-├── analysis_engine.py     → Kök dizinde
+-├── cold_start_engine.py
+-├── export_engine.py
+-├── risk_engine.py
+-├── simulation_engine.py
+-├── sync_engine.py
+-├── transfer_engine.py
++├── engines/               → Tüm engine'lar bir klasörde
++│   ├── __init__.py
++│   ├── analysis.py
++│   ├── cold_start.py
++│   └── ...
+
+-├── generate_backtest_data.py    → Kök dizinde dağınık
+-├── generate_forecast_standalone.py
+-├── import_forecasts.py
+-├── inspect_db.py
+-├── trigger_forecasts.py
++├── scripts/               → Zaten var, bunları içine taşı
++│   ├── generate_backtest_data.py
++│   └── ...
+```
+
+### Frontend İçin
+
+```diff
+ frontend/src/pages/
+-├── Settings.jsx           → 66KB devasa dosya
++├── settings/              → Klasöre ayrılmalı
++│   ├── index.jsx          → Ana layout + tab yönetimi
++│   ├── ProfileTab.jsx
++│   ├── AboutTab.jsx
++│   ├── ModelAITab.jsx
++│   ├── GuideTab.jsx
++│   └── FAQTab.jsx
+```
+
+---
+
+## 7. Bağımlılık Özetleri
+
+### Backend — Gerçekten Gerekli Paketler
+| Paket | Gerekli mi? |
+|-------|-------------|
+| `fastapi`, `uvicorn`, `sqlalchemy`, `pydantic` | ✅ Kesinlikle |
+| `asyncpg`, `psycopg2-binary`, `aiosqlite` | ✅ DB sürücüleri |
+| `google-generativeai` | ✅ ARAS AI |
+| `pandas`, `numpy` | ✅ Analitik/Tahmin |
+| `scikit-learn`, `xgboost`, `scipy` | ⚠️ Aktif kullanım kontrol edilmeli |
+| `Faker` | ⚠️ Sadece seed/test — `dev` dependency olmalı |
+| `Pygments` | ⚠️ SQL Playground için mi? Kontrol et |
+| `icalendar` | ✅ Takvim entegrasyonu |
+| `slowapi` | ✅ Rate limiting |
+| `cryptography`, `rsa`, `pyasn1` | ⚠️ Google Auth bağımlılığı, doğrudan kullanılmıyor |
+
+### Frontend — 38 Dependency
+Büyük bağımlılıklar: `@monaco-editor/react` (~2MB), `mermaid` (~1.5MB), `recharts` (~800KB)
+
+### Mobile — 9 Dependency ✅
+Görece sade. `axios` kullanılmıyor, kaldırılabilir.
+
+---
+
+## 8. Genel Değerlendirme
+
+| Kriter | Puan (1-10) | Açıklama |
+|--------|------------|----------|
+| **Klasör düzeni** | 6/10 | Backend kök dizini dağınık, engine + script dosyaları karmaşık |
+| **Kod kalitesi** | 7/10 | İyi yapılandırılmış ama büyük dosyalar sorun |
+| **Güvenlik** | 4/10 | Hardcoded admin şifresi ciddi risk |
+| **Ölçeklenebilirlik** | 5/10 | Tek [models.py](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/backend/models.py) ve [schemas.py](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/backend/schemas.py) ölçeklenmez |
+| **Bağımlılık yönetimi** | 6/10 | Kullanılmayan paketler var, `requirements.txt` encoding sorunu |
+| **Test kapsamı** | 7/10 | 14 test dosyası var, ancak frontend testleri yok |
+| **Dokümantasyon** | 8/10 | README, API.md, DEPLOYMENT.md, docs/ klasörü iyi |
+| **Frontend yapısı** | 6/10 | Settings.jsx ve SqlPlayground.jsx aşırı büyük |
+| **Mobile yapısı** | 7/10 | Sade ve temiz, küçük sorunlar var |
+
+**Genel Skor: 6.2/10** — İşlevsel ve iyi dokümante, ancak yapısal düzenleme ve güvenlik iyileştirmelerine ihtiyaç var.

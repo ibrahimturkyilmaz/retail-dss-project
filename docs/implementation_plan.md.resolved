@@ -1,0 +1,82 @@
+# Proje Yeniden Yapılandırma (Refactoring) Planı
+
+Bu plan, projeyi prototip seviyesinden çıkartıp sürdürülebilir bir "Product" seviyesine taşımayı amaçlayan iki büyük adımı detaylandırır. 
+
+---
+
+## Aşama 1: Backend Modülerleşmesi (Veri Katmanı)
+
+Şu anki [models.py](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/backend/models.py) (300+ satır) ve [schemas.py](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/backend/schemas.py) (220+ satır) dosyalarını Domain Driven Design (DDD) yaklaşımıyla alt kategorilere böleceğiz.
+
+### 1.1 Klasör ve Dosya Yapısı
+**Hedef:** Tek dosyaları silip yerlerine klasörler oluşturmak.
+```text
+backend/
+├── models/
+│   ├── __init__.py       # Diğer dosyaların importlarını bozmamak için köprü
+│   ├── base.py           # Base = declarative_base() tanımı
+│   ├── customer.py       # Customer, Coupon, MarketingCampaign
+│   ├── product.py        # Product, Category, Inventory
+│   ├── store.py          # Store, StoreFeatures
+│   ├── sale.py           # Sale, PosSale, PosDevice, ZReport
+│   ├── user.py           # User, CalendarNote
+│   └── forecast.py       # Forecast, StoreTarget, StoreTransfer
+└── schemas/
+    ├── __init__.py       # Diğer dosyaların importlarını bozmamak için köprü
+    ├── customer.py       # Pydantic schemaları
+    ├── product.py
+    ├── store.py
+    ├── sale.py
+    ├── user.py
+    └── forecast.py
+```
+
+### 1.2 Import Sorunlarının Çözümü (Kritik Adım)
+Dosyaları böldüğümüzde backend genelindeki routerlar, servisler ve auth mekanizmaları anında çökecektir. Bunun planlı onarımı:
+
+1. **`__init__.py` Köprüleri:** 
+   Örneğin [backend/routers/customers.py](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/backend/routers/customers.py) dosyası şu an `from models import Customer` yapıyor. 
+   Yeni yapıda bu importun patlamaması için `backend/models/__init__.py` dosyasına şunu yazacağız:
+   ```python
+   from .customer import Customer, Coupon, MarketingCampaign
+   from .product import Product, Category, Inventory
+   # ... diğer tüm modeller
+   ```
+   Böylece Python `models` klasörünü paket olarak görecek ve eski importların %90'ı hiç değişmeden çalışmaya devam edecek. Aynı işlem `schemas/__init__.py` için de yapılacak.
+
+2. **Döngüsel İçe Aktarmalar (Circular Imports):**
+   Modeller birbirlerine referans verdikleri için (Örn: [Sale](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/backend/models.py#117-137) modelinde `customer_id` var), [Customer](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/backend/models.py#54-74) modeli ile [Sale](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/backend/models.py#117-137) modeli birbirine bağlanacak. Circular import olmaması için SQLAlchemy'nin string tabelli referansı (`ForeignKey('customers.id')`) zaten mevcut. O yüzden Python seviyesindeki importları sadece çok gerekli durumlarda veya `TYPE_CHECKING` arkasında tutacağız.
+
+3. **[backend/database.py](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/backend/database.py) Düzenlemesi:**
+   Mevcut [database.py](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/backend/database.py) dosyasını koruyacağız, ancak `models.base.py` dosyasını oluşturup `Base = declarative_base()` tanımını oraya alacağız ki diğer model dosyaları temiz bir kaynaktan miras alabilsin.
+
+---
+
+## Aşama 2: Frontend "Settings" Parçalanması
+
+Şu anki [frontend/src/pages/Settings.jsx](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/frontend/src/pages/Settings.jsx) tam 66 KB (1500+ satır). Bu dosya SPA'nın yavaşlamasına ve React state döngülerinin tıkanmasına yol açıyor.
+
+### 2.1 Klasör ve Dosya Yapısı
+**Hedef:** [pages/Settings.jsx](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/frontend/src/pages/Settings.jsx) dosyasını silip yerine `pages/settings/` klasörü kurmak.
+
+```text
+frontend/src/pages/settings/
+├── index.jsx                 # Ana Düzen: Sadece Sidebar Menü ve Tab Content Container
+├── components/
+│   ├── ProfileSettings.jsx   # Sadece form, input, profil resmi güncelleme
+│   ├── AboutSection.jsx      # Statik hakkımızda metinleri
+│   ├── AdvancedModelAI.jsx   # Prophet, XGBoost, Model optimizasyon ekranları
+│   ├── UserGuide.jsx         # Kılavuz (md/html)
+│   └── FAQSection.jsx        # Sıkça sorulan sorular (accordion)
+```
+
+### 2.2 Veri Akışı Düzenlemesi (Kritik Adım)
+1. **Layout ve Routing:** 
+   [App.jsx](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/mobile/src/App.jsx) içindeki `<Route path="/settings" element={<Settings />} />` kodunu `<Route path="/settings/*" element={<SettingsLayout />} />` şeklinde klasöre indireceğiz.
+2. **State Drilling:**
+   Eski [Settings.jsx](file:///c:/Users/ibrah/OneDrive/Pictures/Masa%C3%BCst%C3%BC/retail-dss-project/frontend/src/pages/Settings.jsx) içindeki state'ler (örneğin seçili tab `activeTab`) artık parçalanmış bileşenlere dağıtılacak. Profil kaydetme API çağrıları direkt `ProfileSettings.jsx` içinden yapılacak, ana bileşen şişirilmeyecek.
+
+---
+
+## Sonraki Adım
+Uygulamaya **1. Aşama (Backend Veri Katmanı)** ile başlamak kritik hataları önceden gidermek için idealdir. Onayınızla backend parçalamasına başlayabiliriz.
