@@ -11,54 +11,81 @@ export function useGeofencing(stores) {
 
     // Simulation Functions
     const simulateEnterRegion = async (storeId) => {
+        console.log("Simulating Enter Region for Store:", storeId);
+
         if (!locationEnabled) {
+            console.warn("Location services are disabled in context.");
             setNotification({
-                title: "⚠️ Uyarı",
-                message: "Kullanıcının konumu kapalı, bildirim gönderilemiyor.",
-                action: { label: "Ayarları Aç", onClick: () => console.log("Open settings...") }
+                title: "⚠️ Konum Gerekli",
+                message: "Simülasyonu başlatmak için lütfen konum izni verin.",
+                action: { label: "İzin İste", onClick: () => console.log("Requesting via button...") }
             });
             return;
         }
-        setIsSimulated(true);
+
         const store = stores.find(s => s.id === storeId);
-        if (!store) return;
+        if (!store) {
+            console.error("Store not found in mock data:", storeId);
+            return;
+        }
+
+        console.log("Found Store:", store.name, "at", store.lat, store.lng);
+        setIsSimulated(true);
+
+        // Immediate feedback so user knows something is happening
+        setNotification({
+            title: "🔍 Koordinatlar Gönderiliyor...",
+            message: `${store.name} mağazasına yaklaştığınız simüle ediliyor...`,
+            action: null
+        });
 
         // Backend Call to Simulate & Trigger Email
         try {
             const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-            const customerId = user?.id || 32; // Fallback for dev
+            const customerId = user?.id || 32;
 
-            // Simulate being AT the store by sending store's coordinates
+            console.log(`Calling backend: ${API_URL}/api/marketing/check-proximity for user ${customerId}`);
+
             const response = await fetch(`${API_URL}/api/marketing/check-proximity`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    lat: store.lat || 41.0082, // Default coords if missing
-                    lon: store.lng || 28.9784,
+                    lat: store.lat || 41.0522,
+                    lon: store.lng || 28.9959,
                     customer_id: customerId
                 })
             });
 
             if (response.ok) {
                 const data = await response.json();
+                console.log("Backend response received:", data);
+
                 if (data.notification) {
                     setNotification({
                         storeId: data.store,
-                        title: `🔔 Simülasyon: ${data.title}`,
+                        title: `🔔 ${data.title}`,
                         message: data.message,
                         action: { label: "Kuponu Gör", onClick: () => alert(`Kupon Kodu: ${data.coupon_code}`) }
                     });
+                } else {
+                    setNotification({
+                        title: "📍 Konum İletildi",
+                        message: `Sistem yakında olduğunuzu biliyor fakat kampanya koşulları oluşmadı: ${data.reason || 'Bilinmiyor'}`,
+                    });
                 }
             } else {
-                // Fallback if backend fails/blocked
+                console.error("Backend Error Response:", response.status);
                 setNotification({
-                    title: "📍 150m Yakınlardasınız! (Offline)",
-                    message: "Sepetinizde unuttuğunuz 'Vintage Ceket' mağazamızda stokta!",
-                    action: { label: "Mağazayı Gör", onClick: () => console.log("Navigating...") }
+                    title: "⚠️ Sunucu Hatası",
+                    message: "Kampanya verileri alınamadı. Lütfen daha sonra tekrar deneyin.",
                 });
             }
         } catch (error) {
-            console.error("Simulation Error:", error);
+            console.error("Simulation Fetch Error:", error);
+            setNotification({
+                title: "❌ Bağlantı Hatası",
+                message: "Sunucuya ulaşılamıyor. İnternet bağlantınızı kontrol edin.",
+            });
         }
     };
 
