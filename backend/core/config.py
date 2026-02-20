@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     ALLOWED_ORIGINS: str = "http://localhost:5173,http://localhost:3000,https://retail-dss-project.vercel.app,https://retail-dss-mobile.vercel.app,https://bitirme-projesi-mobil-demo.vercel.app"
     
     # Mail Settings
+    RESEND_API_KEY: str = ""
     MAIL_SERVER: str = ""
     MAIL_PORT: int = 587
     MAIL_USERNAME: str = ""

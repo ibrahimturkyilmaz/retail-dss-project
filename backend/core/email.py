@@ -1,7 +1,4 @@
-
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import resend
 from core.config import settings
 from core.logger import logger
 
@@ -88,44 +85,42 @@ def get_welcome_email_html(first_name: str) -> str:
 
 def send_welcome_email(to_email: str, first_name: str):
     """
-    Sends a welcome email to the new user.
+    Sends a welcome email to the new backoffice user via Resend HTTP API.
     """
-    if not settings.MAIL_USERNAME or not settings.MAIL_PASSWORD:
-        logger.warning("Mail credentials missing. Skipping welcome email.")
+    if not settings.RESEND_API_KEY:
+        logger.warning("RESEND_API_KEY missing. Skipping welcome email.")
         return
 
+    resend.api_key = settings.RESEND_API_KEY
     subject = "RetailDSS'e Hoş Geldiniz! 🚀"
     html_content = get_welcome_email_html(first_name)
 
-    msg = MIMEMultipart('alternative')
-    msg['From'] = settings.MAIL_USERNAME
-    msg['To'] = to_email
-    msg['Subject'] = subject
-    
-    # Attach HTML version
-    msg.attach(MIMEText(html_content, 'html', 'utf-8'))
+    # Note: Using default resend sender if no custom domain is configured.
+    # Otherwise replace with your verified domain email (e.g. info@yourdomain.com)
+    sender = "RetailDSS <onboarding@resend.dev>" 
 
     try:
-        server = smtplib.SMTP(settings.MAIL_SERVER, settings.MAIL_PORT)
-        server.starttls()
-        server.login(settings.MAIL_USERNAME, settings.MAIL_PASSWORD)
-        server.send_message(msg)
-        server.quit()
-        logger.info(f"Welcome email sent to {to_email}")
+        r = resend.Emails.send({
+            "from": sender,
+            "to": to_email,
+            "subject": subject,
+            "html": html_content
+        })
+        logger.info(f"Welcome email sent to {to_email} via Resend. Response: {r}")
     except Exception as e:
-        logger.error(f"Failed to send welcome email to {to_email}: {e}")
+        logger.error(f"Failed to send welcome email to {to_email} via Resend: {e}")
 
 def send_welcome_email_customer(to_email: str, name: str):
     """
-    Sends a welcome email to the new mobile customer.
+    Sends a welcome email to the new mobile customer via Resend HTTP API.
     """
-    if not settings.MAIL_USERNAME or not settings.MAIL_PASSWORD:
-        logger.warning("Mail credentials missing. Skipping welcome email.")
+    if not settings.RESEND_API_KEY:
+        logger.warning("RESEND_API_KEY missing. Skipping welcome email.")
         return
 
+    resend.api_key = settings.RESEND_API_KEY
     subject = "StyleStore Ailesine Hoş Geldiniz! 🎉"
     
-    # Use the nice HTML template from customers.py or a better one
     first_letter = (name[0] if name else "C").upper()
     
     html_content = f"""
@@ -190,22 +185,17 @@ def send_welcome_email_customer(to_email: str, name: str):
     </html>
     """
 
-    msg = MIMEMultipart('alternative')
-    msg['From'] = f"StyleStore <{settings.MAIL_USERNAME}>"
-    msg['To'] = to_email
-    msg['Subject'] = subject
-    
-    msg.attach(MIMEText(html_content, 'html', 'utf-8'))
+    sender = "StyleStore <onboarding@resend.dev>" 
 
     try:
-        logger.info(f"Attempting to send welcome email to {to_email} via {settings.MAIL_SERVER}:{settings.MAIL_PORT}")
-        server = smtplib.SMTP(settings.MAIL_SERVER, settings.MAIL_PORT)
-        server.set_debuglevel(1)
-        server.starttls()
-        server.login(settings.MAIL_USERNAME, settings.MAIL_PASSWORD)
-        server.send_message(msg)
-        server.quit()
-        logger.info(f"✅ Customer welcome email sent to {to_email}")
+        logger.info(f"Attempting to send customer welcome email to {to_email} via Resend")
+        r = resend.Emails.send({
+            "from": sender,
+            "to": to_email,
+            "subject": subject,
+            "html": html_content
+        })
+        logger.info(f"✅ Customer welcome email sent to {to_email}. Response: {r}")
     except Exception as e:
-        logger.error(f"❌ Failed to send customer welcome email to {to_email}: {e}")
+        logger.error(f"❌ Failed to send customer welcome email to {to_email} via Resend: {e}")
 
