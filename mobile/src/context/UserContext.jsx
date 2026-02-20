@@ -39,19 +39,27 @@ export function UserProvider({ children }) {
     const fetchBackendCustomer = async (supabaseUser) => {
         try {
             const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
+            // Parse Google full_name into name + surname
+            const fullName = supabaseUser.user_metadata?.full_name || '';
+            const nameParts = fullName.split(' ');
+            const firstName = nameParts[0] || supabaseUser.email.split('@')[0];
+            const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+
             const res = await fetch(`${API_URL}/api/customers/mobile-login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     email: supabaseUser.email,
-                    name: supabaseUser.user_metadata?.full_name || supabaseUser.email.split('@')[0],
+                    name: firstName,
+                    surname: lastName || null,
                     photo: supabaseUser.user_metadata?.avatar_url
                 })
             });
 
             if (res.ok) {
                 const customer = await res.json();
-                setUser(customer); // Backend customer with Integer ID
+                setUser(customer); // Backend customer with Integer ID + is_new_user flag
             } else {
                 console.error("Failed to sync user with backend");
             }

@@ -76,7 +76,7 @@ async def mobile_login(data: dict, background_tasks: BackgroundTasks, db: AsyncS
     """
     Mobile App: Login or Register with Email.
     Returns existing customer if email exists, else creates new one.
-    Sends welcome email on first registration.
+    Sends welcome/login email on EVERY login.
     """
     email = data.get("email")
     name = data.get("name", "Mobil Kullanıcı")
@@ -102,6 +102,23 @@ async def mobile_login(data: dict, background_tasks: BackgroundTasks, db: AsyncS
             existing_customer.photo_url = photo_url
             await db.commit()
             await db.refresh(existing_customer)
+        
+        # Update name/surname if they were empty before
+        updated = False
+        if surname and not existing_customer.surname:
+            existing_customer.surname = surname
+            updated = True
+        if name and existing_customer.name == "Mobil Kullanıcı":
+            existing_customer.name = name
+            updated = True
+        if updated:
+            await db.commit()
+            await db.refresh(existing_customer)
+        
+        # Send login email on EVERY login
+        logger.info(f"📧 Existing customer login: {existing_customer.email}. Queuing login email...")
+        from core.email import send_welcome_email_customer
+        background_tasks.add_task(send_welcome_email_customer, existing_customer.email, existing_customer.name)
         
         return MobileLoginResponse(
             id=existing_customer.id,

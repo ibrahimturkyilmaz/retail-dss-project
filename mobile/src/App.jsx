@@ -32,10 +32,14 @@ function MainLayout() {
 
   const { notification, dismissNotification, simulateEnterRegion, simulateInStore } = useGeofencing(stores);
 
-  // Restore Session Logic
+  // Restore Session Logic — also handle Google OAuth redirect
   useEffect(() => {
     if (!loading && user) {
       setShowLogin(false);
+      // If backend returned is_new_user (new Google customer), show profile setup
+      if (user.is_new_user && !showProfileSetup) {
+        setShowProfileSetup(true);
+      }
     }
   }, [user, loading]);
 
